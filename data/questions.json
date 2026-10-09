@@ -1,0 +1,101 @@
+[
+  {
+    "id": 1,
+    "difficulty": "Easy",
+    "text": "In Money Heist, what is the Professor's real name?",
+    "options": ["Andrés de Fonollosa", "Sergio Marquina", "Agustín Ramos", "Martín Berrote"],
+    "correctIndex": 1,
+    "timeLimit": 15,
+    "funFact": "Sergio Marquina planned a five-day heist and still forgot to plan for feelings."
+  },
+  {
+    "id": 2,
+    "difficulty": "Easy",
+    "text": "Python programming language was named after:",
+    "options": ["The snake", "A Greek oracle", "Monty Python's Flying Circus", "Its creator's pet"],
+    "correctIndex": 2,
+    "timeLimit": 15,
+    "funFact": "Guido van Rossum picked the comedy troupe. The snake logo showed up later to confuse everyone."
+  },
+  {
+    "id": 3,
+    "difficulty": "Easy",
+    "text": "HTTP status code 404 means:",
+    "options": ["Forbidden", "Server crashed", "Bad gateway", "Not Found"],
+    "correctIndex": 3,
+    "timeLimit": 10,
+    "funFact": "Somewhere, a developer is staring at a URL and blaming the router."
+  },
+  {
+    "id": 4,
+    "difficulty": "Easy",
+    "text": "Which place do the gang rob in the first heist of the show?",
+    "options": ["Bank of Spain", "Royal Mint of Spain", "Bank of Portugal", "Royal Palace of Madrid"],
+    "correctIndex": 1,
+    "timeLimit": 15,
+    "funFact": "They printed their own money inside the Mint. Inflation was not on the agenda."
+  },
+  {
+    "id": 5,
+    "difficulty": "Easy",
+    "text": "The \"S\" in HTTPS stands for:",
+    "options": ["Simple", "Server", "Secure", "Standard"],
+    "correctIndex": 2,
+    "timeLimit": 10,
+    "funFact": "No S, no padlock. The Professor never trusts a site without one."
+  },
+  {
+    "id": 6,
+    "difficulty": "Easy",
+    "text": "Which song became the heist crew's anthem in the show?",
+    "options": ["Ciao Bella", "La Casa", "My Life Is Going On", "Bella Ciao"],
+    "correctIndex": 3,
+    "timeLimit": 15,
+    "funFact": "Bella Ciao is an old Italian folk song. The crew just gave it better lighting."
+  },
+  {
+    "id": 7,
+    "difficulty": "Intermediate",
+    "text": "Which Git command downloads remote changes AND merges them into your branch?",
+    "options": ["git fetch", "git pull", "git clone", "git push"],
+    "correctIndex": 1,
+    "timeLimit": 20,
+    "funFact": "fetch looks. pull looks and then touches. Merge conflicts are the receipt."
+  },
+  {
+    "id": 8,
+    "difficulty": "Intermediate",
+    "text": "Time complexity of binary search on a sorted array:",
+    "options": ["O(n)", "O(1)", "O(log n)", "O(n log n)"],
+    "correctIndex": 2,
+    "timeLimit": 20,
+    "funFact": "A million sorted entries need about twenty checks. Ten hours of sleep would need fewer."
+  },
+  {
+    "id": 9,
+    "difficulty": "Intermediate",
+    "text": "Which of these is NOT a JavaScript data type?",
+    "options": ["undefined", "boolean", "symbol", "float"],
+    "correctIndex": 3,
+    "timeLimit": 20,
+    "funFact": "JavaScript has one Number type for everything. It does not believe in float as a separate career."
+  },
+  {
+    "id": 10,
+    "difficulty": "Intermediate",
+    "text": "The original computer \"bug\" found in the Harvard Mark II in 1947 was a real:",
+    "options": ["Cockroach", "Moth", "Spider", "Mosquito"],
+    "correctIndex": 1,
+    "timeLimit": 30,
+    "funFact": "The team taped the moth into the logbook. Still the best bug report ever filed."
+  },
+  {
+    "id": 11,
+    "difficulty": "Intermediate",
+    "text": "Which of these is NOT a heister codename in Money Heist?",
+    "options": ["Helsinki", "Oslo", "Mumbai", "Manila"],
+    "correctIndex": 2,
+    "timeLimit": 20,
+    "funFact": "Mumbai is a city, not a crew member. Please do not apply to the next heist as Mumbai."
+  }
+]

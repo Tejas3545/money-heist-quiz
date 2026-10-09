@@ -1,0 +1,363 @@
+'use client';
+import dynamic from 'next/dynamic';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useReducedMotion } from 'framer-motion';
+import { Avatar } from '../avatars';
+import { Board } from '../Board';
+import { DistChart } from '../DistChart';
+import { AdscStamp, AtmiyaLogo, CaseLabel, HeistClock, OPTION_STYLE, ReconnectBanner, RollNumber, ShapeIcon, Stamp, Tape, ThinBar, TitleLockup, VolumeIcon, m } from '../ui';
+import { useGame, useNow, useReveal } from '@/lib/useGame';
+import type { PublicState, Row, Snapshot } from '@/lib/types';
+
+const Money = dynamic(() => import('../Money'), { ssr: false });
+type Sfx = typeof import('@/lib/sfx');
+
+function Stage({ children }: { children: ReactNode }) {
+  const [sc, setSc] = useState(1);
+  useEffect(() => {
+    const f = () => setSc(Math.min(window.innerWidth / 1920, window.innerHeight / 1080));
+    f();
+    window.addEventListener('resize', f);
+    return () => window.removeEventListener('resize', f);
+  }, []);
+  return (
+    <div className="fixed inset-0 overflow-hidden bg-ink">
+      <div style={{ position: 'absolute', left: '50%', top: '50%', width: 1920, height: 1080, transform: `translate(-50%,-50%) scale(${sc})` }}>{children}</div>
+    </div>
+  );
+}
+
+/** Vault-door slide between scenes. Old content stays until the doors have closed. */
+function Scenes({ k, children }: { k: string; children: ReactNode }) {
+  const [shownKey, setShownKey] = useState(k);
+  const [ph, setPh] = useState<'idle' | 'close' | 'open'>('idle');
+  const frozen = useRef<ReactNode>(children);
+  if (shownKey === k) frozen.current = children;
+  useEffect(() => {
+    if (k === shownKey) { setPh('idle'); return; }
+    setPh('close');
+    const a = setTimeout(() => { setShownKey(k); setPh('open'); }, 420);
+    const b = setTimeout(() => setPh('idle'), 420 + 600);
+    return () => { clearTimeout(a); clearTimeout(b); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [k]);
+  const closed = ph === 'close';
+  const tr = ph === 'close' ? 'transform .42s cubic-bezier(.7,0,.9,.4)' : 'transform .6s cubic-bezier(.2,.7,.2,1)';
+  const door = (side: 'l' | 'r') => (
+    <div
+      className="absolute top-0 h-full w-1/2 bg-plate"
+      style={{
+        [side === 'l' ? 'left' : 'right']: 0,
+        transform: closed ? 'translateX(0)' : `translateX(${side === 'l' ? '-101%' : '101%'})`,
+        transition: tr,
+        borderRight: side === 'l' ? '6px solid #C9A227' : undefined,
+        borderLeft: side === 'r' ? '6px solid #C9A227' : undefined,
+        backgroundImage: 'radial-gradient(circle at 40px 40px, rgba(232,225,208,.3) 5px, transparent 6px)',
+        backgroundSize: '160px 160px',
+      }}
+    />
+  );
+  return (
+    <div className="relative h-full w-full overflow-hidden">
+      {frozen.current}
+      <div className="pointer-events-none absolute inset-0 z-40" aria-hidden="true">
+        {door('l')}
+        {door('r')}
+        <div className="absolute left-1/2 top-1/2 h-[220px] w-[220px] -translate-x-1/2 -translate-y-1/2 rounded-full border-[10px] border-gold bg-ink" style={{ opacity: closed || ph === 'open' ? 1 : 0, transition: 'opacity .3s' }}>
+          <div className="absolute inset-0 flex items-center justify-center"><div className="display text-[70px] text-red">ADSC</div></div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function QR({ url }: { url: string }) {
+  const [svg, setSvg] = useState('');
+  useEffect(() => {
+    if (!url) return;
+    let dead = false;
+    void import('qrcode').then((q) => q.toString(url, { type: 'svg', margin: 1, color: { dark: '#0B0B0C', light: '#E8E1D0' } })).then((s) => { if (!dead) setSvg(s); });
+    return () => { dead = true; };
+  }, [url]);
+  return <div className="h-[460px] w-[460px] border-[6px] border-ink bg-paper [&>svg]:h-full [&>svg]:w-full" role="img" aria-label="QR code to join" dangerouslySetInnerHTML={{ __html: svg }} />;
+}
+
+export default function ScreenApp() {
+  const { state, now, offline } = useGame(true);
+  const snap = useReveal(state, true);
+  const t = useNow(now, 100);
+  const [code, setCode] = useState('');
+  const [origin, setOrigin] = useState('');
+  const [audio, setAudio] = useState({ on: false, muted: false });
+  const sfx = useRef<Sfx | null>(null);
+
+  useEffect(() => setOrigin(location.origin), []);
+
+  useEffect(() => {
+    if (!state || (state.phase !== 'IDLE' && state.phase !== 'LOBBY')) return;
+    let dead = false;
+    const go = async () => {
+      try {
+        const r = await fetch('/api/screen-code', { headers: { 'x-screen-key': location.pathname } });
+        if (r.ok) { const j = (await r.json()) as { code: string }; if (!dead) setCode(j.code); }
+      } catch { /* retry */ }
+    };
+    void go();
+    const id = setInterval(go, 10000);
+    return () => { dead = true; clearInterval(id); };
+  }, [state?.phase]);
+
+  const enableAudio = async () => {
+    const s = await import('@/lib/sfx');
+    s.initAudio();
+    sfx.current = s;
+    setAudio({ on: true, muted: false });
+    s.lock();
+  };
+  const toggleMute = () => {
+    const muted = !audio.muted;
+    sfx.current?.setMuted(muted);
+    setAudio({ on: true, muted });
+  };
+
+  let scene = 'boot';
+  if (state) {
+    if (state.phase === 'IDLE') scene = 'idle';
+    else if (state.phase === 'LOBBY') scene = 'lobby';
+    else if (state.phase === 'QUESTION') scene = !state.paused && t > 0 && t < state.startAt ? 'pre' : !state.paused && t >= state.endAt ? 'timeup' : 'q';
+    else scene = snap ? (state.phase === 'REVEAL' ? 'reveal' : 'final') : 'timeup';
+  }
+  const remaining = state ? (state.paused ? state.remMs : Math.max(0, state.endAt - t)) : 0;
+  const secLeft = Math.ceil(remaining / 1000);
+
+  useEffect(() => {
+    if (scene === 'pre') sfx.current?.lock();
+    if (scene === 'reveal' || scene === 'final') sfx.current?.thud();
+  }, [scene]);
+  useEffect(() => {
+    if (scene === 'q' && state && !state.paused && secLeft > 0) sfx.current?.tick(secLeft <= 3);
+  }, [secLeft, scene, state]);
+
+  return (
+    <Stage>
+      <div className="relative flex h-full w-full flex-col bg-ink">
+        {/* top letterbox bar */}
+        <div className="flex h-[76px] shrink-0 items-center justify-between bg-ink px-10">
+          <AdscStamp size={46} />
+          <p className="label text-[22px] text-paper/80">Operation Code Carnival / Heist Day</p>
+          <div className="flex items-center gap-6">
+            {!audio.on ? (
+              <button onClick={enableAudio} className="label border-2 border-paper/50 px-4 py-2 text-[18px] text-paper">Tap to enable sound</button>
+            ) : (
+              <button onClick={toggleMute} className="flex items-center gap-2 border-2 border-paper/50 px-3 py-2 text-paper" aria-pressed={audio.muted} aria-label={audio.muted ? 'Unmute' : 'Mute'}>
+                <VolumeIcon off={audio.muted} />
+                <span className="label text-[16px]">{audio.muted ? 'Muted' : 'Sound on'}</span>
+              </button>
+            )}
+            <AtmiyaLogo size={52} />
+          </div>
+        </div>
+        <Tape />
+
+        <div className="spill scanlines relative min-h-0 flex-1 overflow-hidden">
+          <Scenes k={scene === 'pre' || scene === 'timeup' ? 'q' : scene}>
+            <SceneBody scene={scene} state={state} snap={snap} t={t} remaining={remaining} code={code} origin={origin} />
+          </Scenes>
+          {state?.paused && state.phase === 'QUESTION' && (
+            <div className="absolute inset-0 z-30 flex items-center justify-center bg-ink/70">
+              <Stamp tone="gold" className="bg-ink px-12 text-[140px]">Paused</Stamp>
+            </div>
+          )}
+        </div>
+
+        <Tape />
+        <div className="flex h-[60px] shrink-0 items-center justify-center bg-ink">
+          <p className="label text-[22px] text-paper/80">Atmiya Developer Students Club</p>
+        </div>
+        {offline && <div className="absolute inset-x-0 top-0 z-50"><ReconnectBanner show /></div>}
+      </div>
+    </Stage>
+  );
+}
+
+function SceneBody({ scene, state, snap, t, remaining, code, origin }: {
+  scene: string; state: PublicState | null; snap: Snapshot | null; t: number; remaining: number; code: string; origin: string;
+}) {
+  if (!state || scene === 'boot') return <Center><p className="label text-[34px] text-paper/80">Connecting to the vault...</p></Center>;
+  if (scene === 'idle')
+    return (
+      <Center>
+        <TitleLockup size="xl" />
+        <Tape className="my-10 w-[700px]" />
+        <p className="display text-[84px]">The vault is closed</p>
+        <p className="label mt-4 text-[28px] text-paper/80">Wait for the Professor</p>
+      </Center>
+    );
+  if (scene === 'lobby')
+    return (
+      <div className="grid h-full grid-cols-[1fr_640px] gap-12 p-14">
+        <div className="flex flex-col justify-between">
+          <div>
+            <CaseLabel className="!text-[24px]">Case file 03 / Plan accepted</CaseLabel>
+            <div className="mt-6 text-left"><TitleLockup size="xl" /></div>
+          </div>
+          <div>
+            <p className="display text-[64px]">Crew assembled</p>
+            <p className="display num text-[300px] leading-[0.9] text-gold"><RollNumber value={state.count} /></p>
+          </div>
+        </div>
+        <div className="plate flex flex-col items-center justify-center gap-5 p-8">
+          <CaseLabel className="!text-[24px] text-gold">Scan to join</CaseLabel>
+          <QR url={code && origin ? `${origin}/?c=${encodeURIComponent(code)}` : ''} />
+          <CaseLabel className="!text-[24px]">Crew code</CaseLabel>
+          <p className="display stencil text-[130px] tracking-[0.12em] text-gold">{code || '......'}</p>
+        </div>
+      </div>
+    );
+  if (scene === 'pre' && state.q)
+    return (
+      <Center>
+        <CaseLabel className="!text-[30px] text-gold">Plan {String(state.q.n).padStart(2, '0')} / {String(state.total).padStart(2, '0')}</CaseLabel>
+        <p className="display mt-4 text-[150px]">Stand by</p>
+        <div className="mt-8"><HeistClock size="xl" ms={Math.max(0, state.startAt - t)} label="Opens in" /></div>
+      </Center>
+    );
+  if ((scene === 'q' || scene === 'timeup') && state.q) {
+    const q = state.q;
+    const over = scene === 'timeup';
+    return (
+      <div className="flex h-full flex-col p-12">
+        <div className="flex items-start justify-between gap-10">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-5">
+              <CaseLabel className="!text-[28px] text-gold">Plan {String(q.n).padStart(2, '0')} / {String(state.total).padStart(2, '0')}</CaseLabel>
+              <span className="label bg-paper px-3 py-1 text-[22px] text-ink">{q.difficulty}</span>
+              <span className="label text-[22px] text-paper/80">{state.answered} of {state.count} locked in</span>
+            </div>
+            <h1 className="display mt-6 text-[78px] leading-[1.0]">{q.text}</h1>
+          </div>
+          <div className="shrink-0">
+            {over ? <Stamp tone="red" className="bg-ink text-[120px]">Time</Stamp> : <HeistClock size="xl" ms={remaining} />}
+          </div>
+        </div>
+        <ThinBar className="!h-3 mt-6" pct={(remaining / (q.limit * 1000)) * 100} alarm={remaining > 0 && remaining <= 3000} />
+        <div className="mt-8 grid flex-1 grid-cols-2 gap-5">
+          {q.options.map((o, i) => (
+            <div key={i} className={`flex items-center gap-6 border-[4px] px-8 font-body text-[50px] font-bold leading-tight ${OPTION_STYLE[i]} ${over ? 'opacity-60' : ''}`}>
+              <ShapeIcon i={i} size={64} />
+              <span>{o}</span>
+            </div>
+          ))}
+        </div>
+        {over && <p className="label mt-4 text-[26px] text-paper/80">Counting the loot...</p>}
+      </div>
+    );
+  }
+  if (scene === 'timeup') return <Center><Stamp tone="red" className="bg-ink text-[140px]">Time</Stamp><p className="label mt-8 text-[30px] text-paper/80">Counting the loot...</p></Center>;
+  if (scene === 'reveal' && snap) return <RevealScene snap={snap} />;
+  if (scene === 'final' && snap) return <FinalScene snap={snap} />;
+  return <Center><p className="label text-[34px]">Stand by</p></Center>;
+}
+
+function Center({ children }: { children: ReactNode }) {
+  return <div className="flex h-full flex-col items-center justify-center text-center">{children}</div>;
+}
+
+function RevealScene({ snap }: { snap: Snapshot }) {
+  const rm = useReducedMotion();
+  const D = (x: number) => (rm ? 0 : x);
+  const slide = (delay: number) => ({
+    initial: { clipPath: 'inset(0 100% 0 0)' },
+    animate: { clipPath: 'inset(0 0% 0 0)' },
+    transition: { delay: D(delay), duration: rm ? 0 : 0.6, ease: [0.7, 0, 0.2, 1] as [number, number, number, number] },
+  });
+  return (
+    <div className="flex h-full flex-col px-12 py-8">
+      <div className="flex items-baseline gap-6">
+        <CaseLabel className="!text-[24px] text-gold">Plan {String(snap.q + 1).padStart(2, '0')} result</CaseLabel>
+        <p className="line-clamp-1 font-body text-[30px] font-semibold text-paper/85">{snap.text}</p>
+      </div>
+      <div className="mt-5 grid flex-1 grid-cols-[520px_580px_620px] gap-8">
+        <m.section {...slide(0)} className="plate flex flex-col p-6">
+          <CaseLabel className="!text-[20px] text-gold">The answer</CaseLabel>
+          <div className={`mt-2 flex items-center gap-4 border-[4px] px-5 py-4 font-body text-[40px] font-bold leading-tight ${OPTION_STYLE[snap.correct]}`}>
+            <ShapeIcon i={snap.correct} size={48} />
+            <span>{snap.options[snap.correct]}</span>
+          </div>
+          <div className="mt-6 flex-1"><DistChart dist={snap.dist} correct={snap.correct} options={snap.options} big /></div>
+          <p className="mt-4 font-type text-[26px] leading-snug text-paper/90">{snap.fact}</p>
+        </m.section>
+        <m.section {...slide(2.2)} className="plate p-6">
+          <CaseLabel className="!text-[20px] text-gold">This plan / fastest hands</CaseLabel>
+          <Board rows={snap.perQ} mode="q" size="lg" delay={D(2.6)} empty="Nobody cracked this one. The Professor is not surprised." />
+        </m.section>
+        <m.section {...slide(4.6)} className="plate p-6">
+          <CaseLabel className="!text-[20px] text-gold">The board / overall</CaseLabel>
+          <Board rows={snap.cum} mode="cum" size="lg" delay={D(5.0)} />
+        </m.section>
+      </div>
+    </div>
+  );
+}
+
+function VaultDoor({ place, h }: { place: number; h: number }) {
+  return (
+    <div className="plate relative flex items-center justify-center" style={{ height: h, width: 400 }}>
+      <svg viewBox="0 0 200 200" className="absolute h-[88%] opacity-90" aria-hidden="true">
+        <circle cx="100" cy="100" r="92" fill="#0B0B0C" stroke="#C9A227" strokeWidth="6" />
+        {Array.from({ length: 16 }, (_, i) => {
+          const a = (i * 22.5 * Math.PI) / 180;
+          return <circle key={i} cx={100 + Math.sin(a) * 80} cy={100 - Math.cos(a) * 80} r="4.5" fill="#E8E1D0" />;
+        })}
+        <circle cx="100" cy="100" r="58" fill="none" stroke="#7A0A1A" strokeWidth="8" />
+      </svg>
+      <span className="display relative text-[190px] text-gold" style={{ textShadow: '5px 5px 0 #7A0A1A' }}>{place}</span>
+    </div>
+  );
+}
+
+function Podium({ row, place, h }: { row?: Row; place: number; h: number }) {
+  if (!row) return <div style={{ width: 400 }} />;
+  return (
+    <m.div initial={{ y: 80, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.3 + (3 - place) * 0.5, duration: 0.6 }} className="flex flex-col items-center">
+      <Avatar id={row.a} size={place === 1 ? 150 : 120} />
+      <p className="display mt-2 max-w-[400px] truncate text-[52px]">{row.n}</p>
+      <p className="display num mb-3 text-[48px] text-gold">{row.pts.toLocaleString('en-IN')}</p>
+      <VaultDoor place={place} h={h} />
+    </m.div>
+  );
+}
+
+function FinalScene({ snap }: { snap: Snapshot }) {
+  const top = snap.cum;
+  const left = top.slice(0, 5);
+  const right = top.slice(5, 10);
+  return (
+    <div className="relative flex h-full flex-col px-12 py-6">
+      <Money count={26} />
+      <div className="relative z-10 flex items-center justify-between">
+        <h1 className="display stencil text-[78px]">Gracias, crew. The heist is complete.</h1>
+        <Stamp tone="gold" className="bg-ink text-[40px]">Top 10 walk away with the gifts</Stamp>
+      </div>
+      <div className="relative z-10 mt-4 flex items-end justify-center gap-10">
+        <Podium row={top[1]} place={2} h={230} />
+        <Podium row={top[0]} place={1} h={300} />
+        <Podium row={top[2]} place={3} h={190} />
+      </div>
+      <div className="plate relative z-10 mt-5 grid grid-cols-2 gap-x-12 px-8 py-3">
+        {[left, right].map((col, c) => (
+          <ol key={c}>
+            {col.map((r) => (
+              <li key={r.id} className="flex items-center gap-4 border-b border-paper/15 py-1">
+                <span className="display num w-12 text-center text-[34px] text-gold">{r.rank}</span>
+                <Avatar id={r.a} size={42} />
+                <span className="min-w-0 flex-1 truncate font-type text-[32px]">{r.n}</span>
+                <span className="display num text-[32px] text-gold">{r.pts.toLocaleString('en-IN')}</span>
+              </li>
+            ))}
+          </ol>
+        ))}
+      </div>
+    </div>
+  );
+}
