@@ -228,7 +228,7 @@ export function SoundButton({
   size?: 'sm' | 'md' | 'lg';
   className?: string;
 }) {
-  const [muted, setMutedState] = useState(true);
+  const [muted, setMutedState] = useState(false);
 
   useEffect(() => {
     setMutedState(sfx.isMuted());
@@ -304,6 +304,14 @@ export function PadlockIcon({ size = 38, className = '' }: { size?: number; clas
 
 /** Animated Iron Prison Cell Bars that slam down on wrong answer */
 export function JailBarsOverlay({ onClose }: { onClose?: () => void }) {
+  useEffect(() => {
+    // Automatically dismiss jail bars after 2.5 seconds so user directly enters results/leaderboard
+    const t = setTimeout(() => {
+      if (onClose) onClose();
+    }, 2500);
+    return () => clearTimeout(t);
+  }, [onClose]);
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden bg-ink/80 backdrop-blur-sm animate-in fade-in duration-300">
       {/* Heavy Vertical Prison Bars */}
@@ -341,15 +349,9 @@ export function JailBarsOverlay({ onClose }: { onClose?: () => void }) {
           <p className="display num text-[42px] text-alarm leading-none">0 PTS</p>
           <span className="label text-[10px] text-paper/70 uppercase">Zero Loot Awarded</span>
         </div>
-        {onClose && (
-          <button
-            type="button"
-            onClick={onClose}
-            className="w-full border-2 border-paper/40 bg-plate py-2.5 font-display text-[16px] uppercase tracking-wider text-paper hover:border-gold hover:text-gold transition-colors"
-          >
-            Inspect Leaderboard
-          </button>
-        )}
+        <p className="label text-[11px] text-gold/80 animate-pulse mt-2">
+          Opening leaderboard in 3, 2, 1...
+        </p>
       </div>
     </div>
   );

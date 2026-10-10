@@ -2,7 +2,7 @@
 // Supports both actual audio tracks (/audio/bella-ciao.mp3) and zero-latency Web Audio API synthesis
 
 let ctx: AudioContext | null = null;
-let muted = true;
+let muted = false; // Music is ON by default!
 let songAudio: HTMLAudioElement | null = null;
 let songPlaying = false;
 let activeMelodyTimeouts: number[] = [];
@@ -40,19 +40,34 @@ export function initAudio() {
     songAudio = new Audio('/audio/bella-ciao.mp3');
     songAudio.preload = 'auto';
     songAudio.volume = 0.85;
+    songAudio.loop = true;
     songAudio.addEventListener('ended', () => {
       songPlaying = false;
     });
+
+    if (!muted) {
+      songAudio.play()
+        .then(() => { songPlaying = true; })
+        .catch(() => {
+          // Will auto-play on first tap via user gesture listener
+        });
+    }
   }
 }
 
 /**
- * Unlocks audio immediately upon any user touch or click gesture
+ * Unlocks audio immediately upon any user touch or click gesture and plays if unmuted
  */
 export function unlockAudio() {
   initAudio();
   if (ctx && ctx.state === 'suspended') {
     void ctx.resume();
+  }
+  if (!muted && songAudio && songAudio.paused) {
+    songAudio.loop = true;
+    songAudio.play()
+      .then(() => { songPlaying = true; })
+      .catch(() => {});
   }
 }
 
@@ -68,6 +83,9 @@ if (typeof window !== 'undefined') {
   window.addEventListener('click', unlock, { passive: true });
   window.addEventListener('touchstart', unlock, { passive: true });
   window.addEventListener('keydown', unlock, { passive: true });
+
+  // Proactively attempt playback on initial load
+  setTimeout(() => initAudio(), 100);
 }
 
 export function setMuted(m: boolean) {

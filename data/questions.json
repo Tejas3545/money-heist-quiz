@@ -2,100 +2,100 @@
   {
     "id": 1,
     "difficulty": "Easy",
-    "text": "In Money Heist, what is the Professor's real name?",
+    "text": "In Money Heist, what is the Professor's real identity name?",
     "options": ["Andrés de Fonollosa", "Sergio Marquina", "Agustín Ramos", "Martín Berrote"],
     "correctIndex": 1,
     "timeLimit": 15,
-    "funFact": "Sergio Marquina planned a five-day heist and still forgot to plan for feelings."
+    "funFact": "Sergio Marquina spent years orchestrating the Royal Mint heist in honor of his father."
   },
   {
     "id": 2,
     "difficulty": "Easy",
-    "text": "Python programming language was named after:",
-    "options": ["The snake", "A Greek oracle", "Monty Python's Flying Circus", "Its creator's pet"],
-    "correctIndex": 2,
+    "text": "Which iconic building does the gang target in the first heist?",
+    "options": ["Bank of Spain", "Royal Mint of Spain", "National Treasury", "Palacio Real de Madrid"],
+    "correctIndex": 1,
     "timeLimit": 15,
-    "funFact": "Guido van Rossum picked the comedy troupe. The snake logo showed up later to confuse everyone."
+    "funFact": "Instead of stealing stored cash, they printed 984 million euros of unrecorded banknotes."
   },
   {
     "id": 3,
     "difficulty": "Easy",
-    "text": "HTTP status code 404 means:",
-    "options": ["Forbidden", "Server crashed", "Bad gateway", "Not Found"],
-    "correctIndex": 3,
+    "text": "Whose artist face is depicted on the masks worn by the robbers?",
+    "options": ["Pablo Picasso", "Francisco Goya", "Salvador Dalí", "Diego Velázquez"],
+    "correctIndex": 2,
     "timeLimit": 10,
-    "funFact": "Somewhere, a developer is staring at a URL and blaming the router."
+    "funFact": "Salvador Dalí's surrealist mask became a global symbol of resistance and defiance."
   },
   {
     "id": 4,
     "difficulty": "Easy",
-    "text": "Which place do the gang rob in the first heist of the show?",
-    "options": ["Bank of Spain", "Royal Mint of Spain", "Bank of Portugal", "Royal Palace of Madrid"],
-    "correctIndex": 1,
+    "text": "Which Italian resistance song is the heist crew's official anthem?",
+    "options": ["Bella Ciao", "O Sole Mio", "Volare", "Funiculì Funiculà"],
+    "correctIndex": 0,
     "timeLimit": 15,
-    "funFact": "They printed their own money inside the Mint. Inflation was not on the agenda."
+    "funFact": "Bella Ciao was taught to the Professor by his grandfather who fought the fascists in Italy."
   },
   {
     "id": 5,
     "difficulty": "Easy",
-    "text": "The \"S\" in HTTPS stands for:",
-    "options": ["Simple", "Server", "Secure", "Standard"],
+    "text": "What relation is Berlin (Andrés) to the Professor (Sergio)?",
+    "options": ["Childhood Best Friend", "Cousin", "Older Half-Brother", "Former University Mentor"],
     "correctIndex": 2,
-    "timeLimit": 10,
-    "funFact": "No S, no padlock. The Professor never trusts a site without one."
+    "timeLimit": 15,
+    "funFact": "Berlin and Sergio shared the same father, Jesús Marquina, who died during a heist."
   },
   {
     "id": 6,
-    "difficulty": "Easy",
-    "text": "Which song became the heist crew's anthem in the show?",
-    "options": ["Ciao Bella", "La Casa", "My Life Is Going On", "Bella Ciao"],
-    "correctIndex": 3,
-    "timeLimit": 15,
-    "funFact": "Bella Ciao is an old Italian folk song. The crew just gave it better lighting."
+    "difficulty": "Intermediate",
+    "text": "What is Tokyo's real name in the series?",
+    "options": ["Silene Oliveira", "Ágata Jiménez", "Aníbal Cortés", "Julia Martínez"],
+    "correctIndex": 0,
+    "timeLimit": 20,
+    "funFact": "Silene Oliveira served as the main voiceover narrator throughout all seasons of the heist."
   },
   {
     "id": 7,
     "difficulty": "Intermediate",
-    "text": "Which Git command downloads remote changes AND merges them into your branch?",
-    "options": ["git fetch", "git pull", "git clone", "git push"],
+    "text": "Which city codename was selected by the young hacking prodigy of the crew?",
+    "options": ["Denver", "Rio", "Bogotá", "Marseille"],
     "correctIndex": 1,
-    "timeLimit": 20,
-    "funFact": "fetch looks. pull looks and then touches. Merge conflicts are the receipt."
+    "timeLimit": 15,
+    "funFact": "Rio (Aníbal Cortés) built the encrypted satellite link communicating with the Professor."
   },
   {
     "id": 8,
     "difficulty": "Intermediate",
-    "text": "Time complexity of binary search on a sorted array:",
-    "options": ["O(n)", "O(1)", "O(log n)", "O(n log n)"],
-    "correctIndex": 2,
-    "timeLimit": 20,
-    "funFact": "A million sorted entries need about twenty checks. Ten hours of sleep would need fewer."
+    "text": "What target does the crew breach in parts 3 to 5 of the series?",
+    "options": ["Federal Reserve of Europe", "Bank of Spain", "Madrid Gold Vault", "Supreme Court of Spain"],
+    "correctIndex": 1,
+    "timeLimit": 15,
+    "funFact": "They melted 90 tons of the Bank of Spain's gold reserve into micro-pellets to pump it out."
   },
   {
     "id": 9,
     "difficulty": "Intermediate",
-    "text": "Which of these is NOT a JavaScript data type?",
-    "options": ["undefined", "boolean", "symbol", "float"],
-    "correctIndex": 3,
+    "text": "Which inspector led the police negotiations and later joined the crew as 'Lisbon'?",
+    "options": ["Alicia Sierra", "Raquel Murillo", "Ángel Rubio", "Prieto"],
+    "correctIndex": 1,
     "timeLimit": 20,
-    "funFact": "JavaScript has one Number type for everything. It does not believe in float as a separate career."
+    "funFact": "Raquel Murillo tracked the Professor using postcards sent from Palawan, Philippines."
   },
   {
     "id": 10,
     "difficulty": "Intermediate",
-    "text": "The original computer \"bug\" found in the Harvard Mark II in 1947 was a real:",
-    "options": ["Cockroach", "Moth", "Spider", "Mosquito"],
+    "text": "What is Nairobi's famous battle cry when taking charge of the printing room?",
+    "options": ["Empieza el juego!", "Que empiece el matriarcado!", "Hasta la victoria!", "Por la familia!"],
     "correctIndex": 1,
-    "timeLimit": 30,
-    "funFact": "The team taped the moth into the logbook. Still the best bug report ever filed."
+    "timeLimit": 20,
+    "funFact": "'Let the matriarchy begin!' became one of the most iconic lines in TV history."
   },
   {
     "id": 11,
     "difficulty": "Intermediate",
-    "text": "Which of these is NOT a heister codename in Money Heist?",
-    "options": ["Helsinki", "Oslo", "Mumbai", "Manila"],
+    "text": "What precious material does the crew melt down and steal from the Bank of Spain?",
+    "options": ["Diamond Ingots", "Platinum Coins", "Gold Ingots", "Silver Bullion"],
     "correctIndex": 2,
     "timeLimit": 20,
-    "funFact": "Mumbai is a city, not a crew member. Please do not apply to the next heist as Mumbai."
+    "funFact": "The crew replaced the stolen 90 tons of gold reserve with brass bars coated in gold paint!"
   }
 ]
