@@ -16,9 +16,9 @@ export async function GET(req: NextRequest) {
 
   const now = Date.now();
   const cached = memSnapCache.get(q);
-  if (cached && now - cached.time < 30000) {
+  if (cached && now - cached.time < 5000) {
     return new Response(`{"ready":true,"snapshot":${cached.raw}}`, {
-      headers: { 'content-type': 'application/json', 'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=60', 'X-Snap-Cache': 'RAM' },
+      headers: { 'content-type': 'application/json', 'Cache-Control': 'public, s-maxage=5, stale-while-revalidate=10', 'X-Snap-Cache': 'RAM' },
     });
   }
 

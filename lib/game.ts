@@ -187,22 +187,25 @@ async function buildSnapshot(s: RawState) {
   for (let idx = 0; idx <= q; idx++) {
     const qMeta = questionMeta(idx, s.seed);
     const dMap = extraResults[idx * 2] as Record<string, string> | null;
-    const ansCount = Number(extraResults[idx * 2 + 1]) || 0;
     const distArr = [0, 1, 2, 3].map((k) => num(dMap?.[String(k)]));
+    const totalVotes = distArr.reduce((a, b) => a + b, 0);
     history.push({
       q: idx,
       text: qMeta.text,
       options: qMeta.options,
       correct: qMeta.correct,
       dist: distArr,
-      answered: ansCount,
+      answered: totalVotes,
     });
   }
 
+  const currentDist = [0, 1, 2, 3].map((i) => num(dist?.[String(i)]));
+  const currentVotes = currentDist.reduce((a, b) => a + b, 0);
+
   const snap: Snapshot = {
     q, text: m.text, options: m.options, correct: m.correct, fact: m.fact,
-    dist: [0, 1, 2, 3].map((i) => num(dist?.[String(i)])),
-    answered: Number(ans) || 0, crew: Number(crew) || 0,
+    dist: currentDist,
+    answered: currentVotes, crew: Number(crew) || 0,
     perQ: toRows(pq, names),
     cum: toRows(cu, names, prevMap),
     last: q >= QUESTIONS.length - 1,
