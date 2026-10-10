@@ -224,6 +224,11 @@ export default function JoinFlow({ onJoined, notice }: { onJoined: (s: Session) 
                 <div role="radiogroup" aria-label="Avatar" className="grid grid-cols-4 gap-1.5 xs:gap-2 max-h-[175px] xs:max-h-[210px] overflow-y-auto pr-1">
                   {Array.from({ length: AVATAR_COUNT }, (_, i) => {
                     const meta = getAvatarMeta(i);
+                    const shortName = meta.name.startsWith('The ')
+                      ? meta.name.slice(4)
+                      : meta.name.includes('Mask')
+                        ? 'Dalí Mask'
+                        : meta.name.split(' ')[0];
                     return (
                       <button
                         key={i}
@@ -236,9 +241,9 @@ export default function JoinFlow({ onJoined, notice }: { onJoined: (s: Session) 
                           avatar === i ? 'bg-gold ring-2 ring-paper scale-105 shadow-md' : 'bg-ink hover:bg-plate'
                         }`}
                       >
-                        <Avatar id={i} size={42} />
-                        <span className={`label truncate max-w-[62px] text-[9px] mt-0.5 ${avatar === i ? 'text-ink font-bold' : 'text-paper/80'}`}>
-                          {meta.name.split(' ')[0]}
+                        <Avatar id={i} size={44} />
+                        <span className={`label truncate max-w-[68px] text-[9.5px] mt-1 font-semibold ${avatar === i ? 'text-ink font-bold' : 'text-paper/85'}`}>
+                          {shortName}
                         </span>
                       </button>
                     );
