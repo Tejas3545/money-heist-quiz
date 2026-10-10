@@ -1,5 +1,6 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { m } from 'framer-motion';
 import { Avatar } from './avatars';
 import { RollNumber } from './ui';
@@ -35,6 +36,12 @@ export function Board({ rows, mode, size = 'sm', meId, delay = 0, empty = 'Nobod
   rows: Row[]; mode: 'q' | 'cum'; size?: 'sm' | 'lg'; meId?: string; delay?: number; empty?: string; onSelect?: (r: Row) => void;
 }) {
   const [inspected, setInspected] = useState<Row | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const big = size === 'lg';
   const H = big ? 60 : 48;
   if (!rows.length) return <p className="label p-4 text-[12px] text-paper/80">{empty}</p>;
@@ -88,32 +95,47 @@ export function Board({ rows, mode, size = 'sm', meId, delay = 0, empty = 'Nobod
         })}
       </ol>
 
-      {/* Participant info modal on click for duplicate/winner verification */}
-      {inspected && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/80 p-4" onClick={() => setInspected(null)}>
-          <div className="plate max-w-sm w-full p-5 text-center shadow-2xl border-2 border-gold" onClick={(e) => e.stopPropagation()}>
-            <p className="label text-gold text-[12px] mb-2">Operative Dossier / Verification</p>
-            <div className="flex justify-center mb-3">
-              <Avatar id={inspected.a} size={80} />
+      {/* Participant info modal portaled directly into document.body to ensure perfect dead center positioning */}
+      {mounted && inspected && typeof document !== 'undefined' && createPortal(
+        <div
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-ink/80 backdrop-blur-sm p-4 animate-in fade-in duration-200"
+          onClick={() => setInspected(null)}
+        >
+          <div
+            className="plate max-w-md w-full p-6 text-center shadow-2xl border-2 border-gold rounded bg-ink"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <p className="label text-gold text-[13px] mb-2 font-bold uppercase tracking-wider">
+              Operative Dossier / Verification
+            </p>
+            <div className="flex justify-center mb-4">
+              <Avatar id={inspected.a} size={90} />
             </div>
-            <h3 className="display text-[32px] text-paper">{inspected.n}</h3>
-            <p className="display num text-[42px] text-gold">Rank #{inspected.rank}</p>
-            <p className="font-body text-[18px] text-paper/85">{inspected.pts.toLocaleString('en-IN')} points</p>
+            <h3 className="display text-[38px] text-paper leading-tight">{inspected.n}</h3>
+            <p className="display num text-[48px] text-gold mt-1">Rank #{inspected.rank}</p>
+            <p className="font-body text-[20px] text-paper/85 mt-1">
+              {inspected.pts.toLocaleString('en-IN')} points
+            </p>
             {inspected.ph && (
-              <div className="mt-3 bg-ink p-2.5 border border-paper/30">
-                <p className="label text-[11px] text-gold">Registered Mobile (Manual Calling)</p>
-                <p className="font-type text-[22px] text-paper mt-0.5 tracking-wider">+91 {inspected.ph}</p>
+              <div className="mt-4 bg-ink/90 p-3 border border-paper/30 rounded">
+                <p className="label text-[12px] text-gold uppercase tracking-wider font-bold">
+                  Registered Mobile (Manual Calling)
+                </p>
+                <p className="font-type text-[24px] text-paper mt-1 tracking-wider font-semibold">
+                  +91 {inspected.ph}
+                </p>
               </div>
             )}
             <button
               type="button"
               onClick={() => setInspected(null)}
-              className="mt-4 w-full border-2 border-paper/40 bg-ink py-2.5 font-display text-[18px] uppercase text-paper hover:border-gold"
+              className="mt-5 w-full border-2 border-paper/40 bg-ink py-3 font-display text-[20px] uppercase text-paper hover:border-gold hover:text-gold transition-colors rounded"
             >
               Close Dossier
             </button>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );
