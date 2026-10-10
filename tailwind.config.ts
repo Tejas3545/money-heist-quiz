@@ -17,11 +17,17 @@ const config: Config = {
       gold: c('gold'), // #C9A227 vault gold
       paper: c('paper'), // #E8E1D0 aged paper
     },
-    borderRadius: { none: '0', sm: '1px', DEFAULT: '2px', md: '2px', full: '9999px' },
     fontFamily: {
       display: ['var(--font-display)', 'Impact', 'Arial Narrow', 'sans-serif'],
       body: ['var(--font-body)', 'Arial Narrow', 'sans-serif'],
       type: ['var(--font-type)', 'Courier New', 'monospace'],
+    },
+    screens: {
+      xs: '380px',
+      sm: '640px',
+      md: '768px',
+      lg: '1024px',
+      xl: '1280px',
     },
     extend: {
       boxShadow: {

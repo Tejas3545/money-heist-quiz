@@ -43,11 +43,11 @@ function Game({ session, onDrop }: { session: Session; onDrop: (why: 'gone' | 'a
   useWakeLock();
 
   return (
-    <div className="min-h-[100dvh] flex flex-col justify-between">
+    <div className="min-h-[100dvh] flex flex-col justify-between overflow-x-hidden">
       <div>
         <ReconnectBanner show={offline} />
         <Header />
-        <main className="mx-auto max-w-md px-3 pt-3">
+        <main className="mx-auto max-w-md px-2.5 xs:px-3 pt-2 sm:pt-3">
           {!state ? (
             <Splash text="Connecting to the vault..." />
           ) : state.phase === 'IDLE' || state.phase === 'LOBBY' ? (
@@ -74,27 +74,27 @@ function Lobby({ session, state }: { session: Session; state: PublicState }) {
   const open = state.phase === 'LOBBY';
   return (
     <section className="text-center">
-      <CaseLabel className="mb-2">Roster / {open ? 'assembling' : 'sealed'}</CaseLabel>
-      <Plate className="px-4 py-5 shadow-lg">
-        <div className="flex justify-center"><Avatar id={session.avatar} size={100} /></div>
-        <p className="display mt-2 text-[36px]">{session.name}</p>
-        <Tape className="mx-auto my-3 w-40" />
-        <p className="font-body text-[18px] font-semibold text-paper/95 leading-snug">
+      <CaseLabel className="mb-1.5">Roster / {open ? 'assembling' : 'sealed'}</CaseLabel>
+      <Plate className="px-3 py-3.5 xs:px-4 xs:py-4 shadow-lg">
+        <div className="flex justify-center"><Avatar id={session.avatar} size={76} /></div>
+        <p className="display mt-1 text-[28px] xs:text-[34px]">{session.name}</p>
+        <Tape className="mx-auto my-2 w-32 xs:w-40" />
+        <p className="font-body text-[15px] xs:text-[17px] font-semibold text-paper/95 leading-snug">
           {open ? 'Plan accepted. Wait for the signal.' : 'The vault is closed. Stay near the door.'}
         </p>
       </Plate>
 
-      {/* Hero Vault / Mask Art on Lobby Screen */}
-      <div className="my-3 bg-ink/70 border border-paper/15 p-2 rounded">
-        <HeistMaskGraphic height={110} />
+      {/* Hero Vault / Mask Art on Lobby Screen: compact */}
+      <div className="my-2 bg-ink/70 border border-paper/15 p-1 rounded">
+        <HeistMaskGraphic height={75} />
       </div>
 
-      <Plate className="px-4 py-3">
+      <Plate className="px-3 py-2 xs:px-4 xs:py-2.5">
         <CaseLabel className="text-gold">Crew assembled in the vault</CaseLabel>
-        <p className="display num text-[64px] text-gold leading-tight"><RollNumber value={state.count} /></p>
+        <p className="display num text-[48px] xs:text-[58px] text-gold leading-tight"><RollNumber value={state.count} /></p>
       </Plate>
 
-      <TacticalBlueprintBanner className="mt-3" />
+      <TacticalBlueprintBanner className="mt-2.5" />
 
       <button
         type="button"
@@ -102,7 +102,7 @@ function Lobby({ session, state }: { session: Session; state: PublicState }) {
           localStorage.clear();
           location.reload();
         }}
-        className="mt-3 w-full border border-paper/30 bg-ink/90 py-2.5 font-type text-[12px] uppercase tracking-wider text-paper/70 hover:border-red hover:text-paper"
+        className="mt-2.5 w-full border border-paper/30 bg-ink/90 py-2 font-type text-[11px] xs:text-[12px] uppercase tracking-wider text-paper/70 hover:border-red hover:text-paper"
       >
         [ Change Codename / Reset Device ]
       </button>
@@ -190,20 +190,20 @@ function QuestionView({ state, now, session, onDrop, refresh }: {
     <section>
       <div className="flex items-end justify-between">
         <div>
-          <div className="flex items-center gap-2">
-            <CaseLabel className="text-gold">Plan {String(q.n).padStart(2, '0')} / {String(state.total).padStart(2, '0')}</CaseLabel>
-            <span className="label bg-red/90 text-paper px-1.5 py-0.5 text-[9px] font-bold border border-ink tracking-wider">
+          <div className="flex items-center gap-1.5 xs:gap-2">
+            <CaseLabel className="text-gold text-[10px] xs:text-[11px]">Plan {String(q.n).padStart(2, '0')} / {String(state.total).padStart(2, '0')}</CaseLabel>
+            <span className="label bg-red/90 text-paper px-1.5 py-0.5 text-[8px] xs:text-[9px] font-bold border border-ink tracking-wider">
               REAL TIME
             </span>
           </div>
-          <p className="label mt-1 text-[10px] text-paper/70">
+          <p className="label mt-0.5 text-[9px] xs:text-[10px] text-paper/70">
             Speed matters: 1000 pts down to 100 pts
           </p>
         </div>
         {before ? (
-          <div className="label text-right text-[12px] text-paper/80">
+          <div className="label text-right text-[11px] xs:text-[12px] text-paper/80">
             Opens in
-            <span className="display num block text-[46px] leading-none text-gold">
+            <span className="display num block text-[38px] xs:text-[46px] leading-none text-gold">
               {Math.max(1, Math.ceil((state.startAt - t) / 1000))}s
             </span>
           </div>
@@ -211,24 +211,24 @@ function QuestionView({ state, now, session, onDrop, refresh }: {
           <HeistClock ms={remaining} />
         )}
       </div>
-      <ThinBar className="mt-2" pct={before ? 100 : (remaining / limitMs) * 100} alarm={alarm} />
+      <ThinBar className="mt-1.5" pct={before ? 100 : (remaining / limitMs) * 100} alarm={alarm} />
 
       {state.paused && (
-        <p role="status" className="mt-3 border-l-4 border-gold bg-plate px-3 py-2 font-body text-[17px] font-semibold">The Professor paused the plan. Hold position.</p>
+        <p role="status" className="mt-2.5 border-l-4 border-gold bg-plate px-2.5 py-1.5 font-body text-[15px] xs:text-[17px] font-semibold">The Professor paused the plan. Hold position.</p>
       )}
 
       {before ? (
-        <Plate className="mt-3 px-4 py-8 text-center border-2 border-gold/60">
-          <p className="display text-[52px] text-gold animate-pulse">STAND BY</p>
-          <p className="font-body mt-1 text-[19px] text-paper/90">Synchronizing clocks with the vault.</p>
-          <p className="label mt-3 text-[11px] text-paper/60 uppercase">Fastest answers claim up to 1000 points</p>
+        <Plate className="mt-2.5 px-3 py-6 xs:px-4 xs:py-8 text-center border-2 border-gold/60">
+          <p className="display text-[44px] xs:text-[52px] text-gold animate-pulse">STAND BY</p>
+          <p className="font-body mt-1 text-[16px] xs:text-[19px] text-paper/90">Synchronizing clocks with the vault.</p>
+          <p className="label mt-2.5 text-[10px] xs:text-[11px] text-paper/60 uppercase">Fastest answers claim up to 1000 points</p>
         </Plate>
       ) : (
         <>
-          <Plate className="mt-3 p-4">
-            <p className="font-body text-[22px] font-semibold leading-snug">{q.text}</p>
+          <Plate className="mt-2.5 p-3 xs:p-4">
+            <p className="font-body text-[18px] xs:text-[21px] font-semibold leading-snug">{q.text}</p>
           </Plate>
-          <div className="mt-3 grid gap-2.5">
+          <div className="mt-2.5 grid gap-2 xs:gap-2.5">
             {q.options.map((o, i) => {
               const picked = choice === i;
               return (
@@ -238,10 +238,10 @@ function QuestionView({ state, now, session, onDrop, refresh }: {
                   disabled={!open || locked}
                   onClick={() => submit(i)}
                   aria-pressed={picked}
-                  className={`flex min-h-[72px] w-full items-center gap-3 border-2 px-3.5 py-2 text-left font-body text-[20px] font-bold leading-tight shadow-press transition-transform active:translate-y-1 active:shadow-none disabled:shadow-none ${OPTION_STYLE[i]} ${locked && !picked ? 'opacity-40' : ''} ${picked ? 'outline outline-4 outline-offset-2 outline-gold' : ''}`}
+                  className={`flex min-h-[58px] xs:min-h-[66px] w-full items-center gap-2.5 xs:gap-3 border-2 px-3 py-1.5 xs:px-3.5 xs:py-2 text-left font-body text-[16px] xs:text-[18px] sm:text-[20px] font-bold leading-tight shadow-press transition-transform active:translate-y-1 active:shadow-none disabled:shadow-none ${OPTION_STYLE[i]} ${locked && !picked ? 'opacity-40' : ''} ${picked ? 'outline outline-4 outline-offset-2 outline-gold' : ''}`}
                 >
-                  <ShapeIcon i={i} size={28} />
-                  <span>{o}</span>
+                  <ShapeIcon i={i} size={24} />
+                  <span className="flex-1 break-words">{o}</span>
                 </button>
               );
             })}
@@ -249,22 +249,22 @@ function QuestionView({ state, now, session, onDrop, refresh }: {
         </>
       )}
 
-      <div className="mt-3 min-h-[76px]" aria-live="polite">
+      <div className="mt-2.5 min-h-[60px]" aria-live="polite">
         {locked && (
-          <Plate className="px-4 py-3">
-            <p className="display text-[30px] text-gold">Locked in.</p>
-            <p className="font-body text-[17px] text-paper/90">Waiting for the crew...</p>
-            <div className="mt-2 h-1 w-full overflow-hidden bg-paper/15"><div className="scanbar" /></div>
+          <Plate className="px-3 py-2 xs:px-4 xs:py-2.5">
+            <p className="display text-[24px] xs:text-[28px] text-gold">Locked in.</p>
+            <p className="font-body text-[14px] xs:text-[16px] text-paper/90">Waiting for the crew...</p>
+            <div className="mt-1 h-1 w-full overflow-hidden bg-paper/15"><div className="scanbar" /></div>
           </Plate>
         )}
-        {ack === 'late' && <p className="border-l-4 border-red bg-plate px-3 py-2 font-body text-[17px] font-semibold">Too late. The vault already closed on that one.</p>}
-        {ack === 'fail' && <p className="border-l-4 border-red bg-plate px-3 py-2 font-body text-[17px] font-semibold">Signal lost. Tap an answer again.</p>}
-        {ack === 'paused' && <p className="border-l-4 border-gold bg-plate px-3 py-2 font-body text-[17px] font-semibold">Plan on hold. Your answer was not logged. Try again when it resumes.</p>}
-        {over && !locked && ack === 'none' && <p className="font-body text-[18px] font-semibold text-paper/90">Time. No answer logged.</p>}
-        {over && locked && <p className="label mt-2 text-[12px] text-paper/80">Time. Counting the loot...</p>}
+        {ack === 'late' && <p className="border-l-4 border-red bg-plate px-2.5 py-1.5 font-body text-[15px] xs:text-[17px] font-semibold">Too late. The vault already closed on that one.</p>}
+        {ack === 'fail' && <p className="border-l-4 border-red bg-plate px-2.5 py-1.5 font-body text-[15px] xs:text-[17px] font-semibold">Signal lost. Tap an answer again.</p>}
+        {ack === 'paused' && <p className="border-l-4 border-gold bg-plate px-2.5 py-1.5 font-body text-[15px] xs:text-[17px] font-semibold">Plan on hold. Your answer was not logged. Try again when it resumes.</p>}
+        {over && !locked && ack === 'none' && <p className="font-body text-[15px] xs:text-[17px] font-semibold text-paper/90">Time. No answer logged.</p>}
+        {over && locked && <p className="label mt-1 text-[10px] xs:text-[11px] text-paper/80">Time. Counting the loot...</p>}
       </div>
 
-      <TacticalBlueprintBanner className="mt-3" />
+      <TacticalBlueprintBanner className="mt-2.5" />
     </section>
   );
 }
@@ -348,54 +348,54 @@ function RevealView({ state, snap, me, session }: { state: PublicState; snap: Sn
         </div>
       )}
 
-      <Plate className="mt-2 px-4 py-4 text-center">
-        <p className="font-body text-[20px] font-bold">
+      <Plate className="mt-2 px-3 py-3 xs:px-4 xs:py-3.5 text-center">
+        <p className="font-body text-[16px] xs:text-[19px] font-bold">
           {ok ? `Vault cracked! +${gain.toLocaleString('en-IN')} points!` : answered ? 'Wrong code. You got caught in the crossfire.' : 'No answer logged. The Professor noticed.'}
         </p>
-        <p className="display num mt-1 text-[72px] text-gold">+<RollNumber from={0} value={gain} /></p>
-        <span className="label text-[10px] text-gold/80 block mt-1 uppercase">Computed Real Time by Response Speed</span>
+        <p className="display num mt-0.5 text-[54px] xs:text-[66px] text-gold leading-none">+<RollNumber from={0} value={gain} /></p>
+        <span className="label text-[9px] xs:text-[10px] text-gold/80 block mt-1 uppercase">Computed Real Time by Response Speed</span>
       </Plate>
 
-      {/* Loot illustration on reveal */}
-      <div className="my-2 bg-ink/60 border border-paper/15 p-1 rounded">
-        <LootBagsGraphic height={85} />
+      {/* Loot illustration on reveal: compact */}
+      <div className="my-1.5 bg-ink/60 border border-paper/15 p-1 rounded">
+        <LootBagsGraphic height={65} />
       </div>
 
-      <div className="mt-2 grid grid-cols-2 gap-2.5">
-        <Plate className="px-3 py-3 text-center">
-          <CaseLabel className="text-gold">Your rank</CaseLabel>
-          <p className="display num text-[50px]">#{rank}</p>
-          <p className="label text-[10px] text-paper/70">of {me.total}</p>
+      <div className="mt-2 grid grid-cols-2 gap-2">
+        <Plate className="px-2.5 py-2 xs:px-3 xs:py-2.5 text-center">
+          <CaseLabel className="text-gold text-[10px]">Your rank</CaseLabel>
+          <p className="display num text-[38px] xs:text-[46px] leading-tight">#{rank}</p>
+          <p className="label text-[9px] text-paper/70">of {me.total}</p>
         </Plate>
-        <Plate className="px-3 py-3 text-center">
-          <CaseLabel className="text-gold">Total score</CaseLabel>
-          <p className="display num text-[50px] text-gold"><RollNumber value={me.pts ?? 0} /></p>
-          <p className="font-body text-[13px] font-semibold text-paper/90">
-            {rank === 1 ? 'Leading the crew.' : me.gap === 0 ? 'Tied on points.' : me.gap != null ? `${me.gap} behind #${rank - 1}` : ''}
+        <Plate className="px-2.5 py-2 xs:px-3 xs:py-2.5 text-center">
+          <CaseLabel className="text-gold text-[10px]">Total score</CaseLabel>
+          <p className="display num text-[38px] xs:text-[46px] text-gold leading-tight"><RollNumber value={me.pts ?? 0} /></p>
+          <p className="font-body text-[11px] xs:text-[13px] font-semibold text-paper/90 truncate">
+            {rank === 1 ? 'Leading crew' : me.gap === 0 ? 'Tied' : me.gap != null ? `${me.gap} behind #${rank - 1}` : ''}
           </p>
         </Plate>
       </div>
 
-      <Plate className="mt-2 p-3">
-        <CaseLabel className="text-gold">The answer</CaseLabel>
-        <div className="mt-1 flex items-center gap-2 font-body text-[20px] font-bold"><ShapeIcon i={snap.correct} size={22} /> {snap.options[snap.correct]}</div>
-        <p className="mt-2 font-type text-[14px] leading-snug text-paper/90">{snap.fact}</p>
+      <Plate className="mt-2 p-2.5 xs:p-3">
+        <CaseLabel className="text-gold text-[10px]">The answer</CaseLabel>
+        <div className="mt-0.5 flex items-center gap-2 font-body text-[16px] xs:text-[18px] font-bold"><ShapeIcon i={snap.correct} size={20} /> {snap.options[snap.correct]}</div>
+        <p className="mt-1 font-type text-[12px] xs:text-[13px] leading-snug text-paper/90">{snap.fact}</p>
       </Plate>
 
       {/* Full Top 20 Scrollable Leaderboard for user */}
-      <Plate className="mt-3 pb-2">
-        <div className="flex items-center justify-between px-3 pt-3">
-          <CaseLabel className="text-gold">Leaderboard / Top 20 Crew</CaseLabel>
-          <span className="label text-[10px] text-paper/60 uppercase">Rank 1 is The Professor</span>
+      <Plate className="mt-2.5 pb-2">
+        <div className="flex items-center justify-between px-3 pt-2.5">
+          <CaseLabel className="text-gold text-[10px] xs:text-[11px]">Leaderboard / Top 20 Crew</CaseLabel>
+          <span className="label text-[9px] text-paper/60 uppercase">Rank 1: The Professor</span>
         </div>
-        <div className="mt-2 max-h-[380px] overflow-y-auto pr-1">
+        <div className="mt-1.5 max-h-[260px] xs:max-h-[320px] overflow-y-auto pr-1">
           <Board rows={snap.cum.slice(0, 20)} mode="cum" meId={session.pid} />
         </div>
       </Plate>
 
-      <TacticalBlueprintBanner className="mt-3" />
+      <TacticalBlueprintBanner className="mt-2.5" />
 
-      <m.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.5 }} className="label mt-3 text-center text-[12px] text-paper/80">
+      <m.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.5 }} className="label mt-2 text-center text-[11px] xs:text-[12px] text-paper/80">
         Plan {state.qi + 1 >= state.total ? 'complete. Waiting for final call.' : 'loading. Wait for the next signal.'}
       </m.p>
     </section>
@@ -425,12 +425,12 @@ function FinalView({ snap, me, session }: { snap: Snapshot | null; me: MeResult 
       {/* Celebration firecrackers / money falling */}
       <Money count={26} />
 
-      <Stamp tone="gold" className="bg-ink text-[28px]">Heist complete</Stamp>
-      <h1 className="display mt-2 text-[40px]">Gracias, crew.</h1>
+      <Stamp tone="gold" className="bg-ink text-[22px] xs:text-[26px]">Heist complete</Stamp>
+      <h1 className="display mt-1 text-[32px] xs:text-[38px]">Gracias, crew.</h1>
 
-      {/* Dalí mask & loot climax */}
-      <div className="my-2 bg-ink/70 border border-paper/15 p-2 rounded">
-        <HeistMaskGraphic height={95} />
+      {/* Dalí mask & loot climax: compact */}
+      <div className="my-1.5 bg-ink/70 border border-paper/15 p-1 rounded">
+        <HeistMaskGraphic height={75} />
       </div>
 
       {/* Top 10 Winner Fireworks Celebration Box */}

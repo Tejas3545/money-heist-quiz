@@ -6,11 +6,11 @@ import * as sfx from '@/lib/sfx';
 
 /* ---------- branding ---------- */
 
-export function AdscStamp({ size = 52, big = false }: { size?: number; big?: boolean }) {
+export function AdscStamp({ size = 46, big = false }: { size?: number; big?: boolean }) {
   return (
     <div
-      className={`inline-flex shrink-0 items-center border-2 border-gold bg-ink/95 rounded-lg shadow-md transition-transform ${
-        big ? 'gap-3 px-3.5 py-2' : 'gap-2 px-2.5 py-1.5'
+      className={`inline-flex shrink-0 items-center border border-gold/80 sm:border-2 sm:border-gold bg-ink/95 rounded shadow-sm transition-transform ${
+        big ? 'gap-3 px-3.5 py-2' : 'gap-1 sm:gap-2 px-1.5 py-1 sm:px-2.5 sm:py-1.5'
       }`}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -19,11 +19,11 @@ export function AdscStamp({ size = 52, big = false }: { size?: number; big?: boo
         alt="ADSC logo"
         className="block shrink-0 object-contain"
         style={{
-          width: big ? 82 : size,
-          height: big ? 82 : size,
+          width: big ? 82 : undefined,
+          height: big ? 82 : undefined,
         }}
       />
-      <span className={`label leading-tight text-gold font-bold ${big ? 'text-[22px]' : 'text-[12px] sm:text-[14px]'}`}>
+      <span className={`label leading-tight text-gold font-bold ${big ? 'text-[22px]' : 'text-[9px] xs:text-[10px] sm:text-[13px]'}`}>
         ADSC
         <br />
         CREW
@@ -32,11 +32,11 @@ export function AdscStamp({ size = 52, big = false }: { size?: number; big?: boo
   );
 }
 
-export function AtmiyaLogo({ size = 52, big = false }: { size?: number; big?: boolean }) {
+export function AtmiyaLogo({ size = 46, big = false }: { size?: number; big?: boolean }) {
   return (
     <div
-      className={`inline-flex shrink-0 items-center justify-center rounded-lg bg-white border-2 border-gold shadow-md ${
-        big ? 'h-[88px] max-w-[280px] px-4 py-2' : 'h-[54px] sm:h-[60px] min-w-[125px] max-w-[170px] sm:max-w-[210px] px-3 py-1.5'
+      className={`inline-flex shrink-0 items-center justify-center rounded bg-white border border-gold/80 sm:border-2 sm:border-gold shadow-sm ${
+        big ? 'h-[88px] max-w-[280px] px-4 py-2' : 'h-[40px] xs:h-[44px] sm:h-[54px] min-w-[70px] xs:min-w-[90px] sm:min-w-[125px] max-w-[110px] xs:max-w-[140px] sm:max-w-[210px] px-1.5 xs:px-2 sm:px-3 py-1'
       }`}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -45,7 +45,7 @@ export function AtmiyaLogo({ size = 52, big = false }: { size?: number; big?: bo
         alt="Atmiya University logo"
         className="block shrink-0 h-full w-auto object-contain"
         style={{
-          maxHeight: big ? 78 : size,
+          maxHeight: big ? 78 : undefined,
         }}
       />
     </div>
@@ -55,9 +55,11 @@ export function AtmiyaLogo({ size = 52, big = false }: { size?: number; big?: bo
 export function TitleLockup({ size = 'sm' }: { size?: 'sm' | 'xl' }) {
   const xl = size === 'xl';
   return (
-    <div className="flex min-w-0 flex-1 flex-col items-center justify-center text-center px-1">
-      <div className={`display stencil text-red tracking-wide truncate max-w-full ${xl ? 'text-[120px]' : 'text-[22px] sm:text-[28px]'}`}>Code Carnival 3.0</div>
-      <div className={`label inline-block bg-paper text-ink font-bold shadow-sm ${xl ? 'mt-3 px-5 py-1 text-[28px] tracking-[0.3em]' : 'mt-0.5 px-2 py-0.5 text-[9px] sm:text-[10px] tracking-[0.2em]'}`}>
+    <div className="flex min-w-0 flex-1 flex-col items-center justify-center text-center px-0.5 sm:px-1">
+      <div className={`display stencil text-red tracking-wide truncate max-w-full ${xl ? 'text-[120px]' : 'text-[17px] xs:text-[20px] sm:text-[26px]'}`}>
+        Code Carnival 3.0
+      </div>
+      <div className={`label inline-block bg-paper text-ink font-bold shadow-sm ${xl ? 'mt-3 px-5 py-1 text-[28px] tracking-[0.3em]' : 'mt-0.5 px-1.5 py-px text-[8px] xs:text-[9px] sm:text-[10px] tracking-[0.16em] sm:tracking-[0.2em]'}`}>
         Heist Day
       </div>
     </div>
@@ -66,10 +68,10 @@ export function TitleLockup({ size = 'sm' }: { size?: 'sm' | 'xl' }) {
 
 export function Header({ fullWidth = false, showAudio = true }: { fullWidth?: boolean; showAudio?: boolean }) {
   return (
-    <header className="spill relative bg-ink border-b-2 border-gold/40 shadow-lg">
-      <div className={`mx-auto flex items-center justify-between gap-2.5 px-3 py-2 sm:px-6 sm:py-2.5 ${fullWidth ? 'max-w-7xl' : 'max-w-4xl'}`}>
+    <header className="spill relative bg-ink border-b border-gold/30 sm:border-b-2 sm:border-gold/40 shadow-md">
+      <div className={`mx-auto flex items-center justify-between gap-1.5 xs:gap-2 sm:gap-3 px-2 py-1.5 sm:px-5 sm:py-2.5 ${fullWidth ? 'max-w-7xl' : 'max-w-md sm:max-w-2xl'}`}>
         <AtmiyaLogo />
-        <div className="flex items-center justify-center gap-2 sm:gap-3">
+        <div className="flex min-w-0 flex-1 items-center justify-center gap-1 sm:gap-2">
           <TitleLockup />
           {showAudio && <SoundButton size="sm" />}
         </div>

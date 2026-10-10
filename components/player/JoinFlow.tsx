@@ -91,35 +91,35 @@ export default function JoinFlow({ onJoined, notice }: { onJoined: (s: Session) 
   }, [code, name, phone, avatar, onJoined]);
 
   return (
-    <div className="min-h-[100dvh] flex flex-col justify-between">
+    <div className="min-h-[100dvh] flex flex-col justify-between overflow-x-hidden">
       <div>
         <Header />
-        <main className="mx-auto max-w-md px-3 pt-3">
-          <div className="mb-3 flex items-center justify-between">
+        <main className="mx-auto max-w-md px-2.5 xs:px-3 pt-2 sm:pt-3">
+          <div className="mb-2 flex items-center justify-between">
             <CaseLabel>Case file 03 / Operation Code Carnival</CaseLabel>
-            <Stamp tone="paper" className="!border-2 text-[12px]">Confidential</Stamp>
+            <Stamp tone="paper" className="!border-2 text-[10px] xs:text-[12px] py-0.5">Confidential</Stamp>
           </div>
 
-          <Plate className="p-4 shadow-xl">
-            <div className="flex items-center justify-between mb-2">
+          <Plate className="p-3 xs:p-4 shadow-xl">
+            <div className="flex items-center justify-between mb-1.5 xs:mb-2">
               <CaseLabel className="text-gold">Step {step} of 3</CaseLabel>
-              <span className="font-mono text-[11px] text-paper/60 uppercase">
+              <span className="font-mono text-[10px] xs:text-[11px] text-paper/60 uppercase">
                 {step === 1 ? 'VAULT ACCESS' : step === 2 ? 'OPERATIVE FILE' : 'CREW IDENTITY'}
               </span>
             </div>
 
             {step === 1 && (
               <form onSubmit={(e) => { e.preventDefault(); next1(); }}>
-                {/* Hero Vault Door Graphic eliminates top dead space */}
-                <div className="my-2 bg-ink/60 border border-paper/15 p-2 rounded">
-                  <VaultDoorGraphic height={115} />
+                {/* Hero Vault Door Graphic: compact on mobile */}
+                <div className="my-1.5 xs:my-2 bg-ink/60 border border-paper/15 p-1 rounded">
+                  <VaultDoorGraphic height={80} />
                 </div>
 
-                <h1 className="display mb-1 text-[38px]">Enter the code</h1>
-                <p className="mb-3 font-body text-[16px] text-paper/85 leading-snug">
+                <h1 className="display mb-0.5 text-[30px] xs:text-[36px]">Enter the code</h1>
+                <p className="mb-2.5 font-body text-[14px] xs:text-[16px] text-paper/85 leading-snug">
                   One code for the whole crew. It is displayed on the big screen.
                 </p>
-                <label htmlFor="code" className="label mb-1 block text-[12px] text-gold">Crew code</label>
+                <label htmlFor="code" className="label mb-1 block text-[11px] xs:text-[12px] text-gold">Crew code</label>
                 <input
                   id="code"
                   className={`${inputCls} uppercase tracking-[0.3em]`}
@@ -134,7 +134,7 @@ export default function JoinFlow({ onJoined, notice }: { onJoined: (s: Session) 
                 />
                 <button
                   type="submit"
-                  className="mt-4 min-h-[58px] w-full border-2 border-ink bg-red font-display text-[26px] uppercase tracking-wide text-paper shadow-press active:translate-y-1 active:shadow-none hover:bg-alarm transition-colors"
+                  className="mt-3 xs:mt-4 min-h-[52px] xs:min-h-[58px] w-full border-2 border-ink bg-red font-display text-[22px] xs:text-[26px] uppercase tracking-wide text-paper shadow-press active:translate-y-1 active:shadow-none hover:bg-alarm transition-colors"
                 >
                   Enter the vault
                 </button>
@@ -143,16 +143,16 @@ export default function JoinFlow({ onJoined, notice }: { onJoined: (s: Session) 
 
             {step === 2 && (
               <form onSubmit={(e) => { e.preventDefault(); next2(); }}>
-                {/* Confidential Dossier Graphic eliminates dead space */}
-                <div className="my-2 bg-ink/60 border border-paper/15 p-1 rounded">
-                  <DossierGraphic height={105} />
+                {/* Confidential Dossier Graphic: compact on mobile */}
+                <div className="my-1.5 xs:my-2 bg-ink/60 border border-paper/15 p-1 rounded">
+                  <DossierGraphic height={75} />
                 </div>
 
-                <h1 className="display mb-1 text-[38px]">Your cover story</h1>
-                <p className="mb-3 font-body text-[16px] text-paper/85 leading-snug">
+                <h1 className="display mb-0.5 text-[30px] xs:text-[36px]">Your cover story</h1>
+                <p className="mb-2 font-body text-[14px] xs:text-[16px] text-paper/85 leading-snug">
                   A codename for the leaderboard and mobile number for gift handover.
                 </p>
-                <label htmlFor="name" className="label mb-1 block text-[12px] text-gold">
+                <label htmlFor="name" className="label mb-1 block text-[11px] xs:text-[12px] text-gold">
                   Codename ({NAME_MIN} to {NAME_MAX} characters)
                 </label>
                 <input
@@ -164,9 +164,9 @@ export default function JoinFlow({ onJoined, notice }: { onJoined: (s: Session) 
                   autoComplete="nickname"
                   placeholder="e.g. TOKYO / BERLIN"
                 />
-                <label htmlFor="phone" className="label mb-1 mt-3 block text-[12px] text-gold">Mobile number</label>
+                <label htmlFor="phone" className="label mb-1 mt-2.5 block text-[11px] xs:text-[12px] text-gold">Mobile number</label>
                 <div className="flex">
-                  <span className="flex items-center border-2 border-r-0 border-paper/40 bg-plate px-3 font-type text-[20px] text-gold">+91</span>
+                  <span className="flex items-center border-2 border-r-0 border-paper/40 bg-plate px-2.5 font-type text-[18px] xs:text-[20px] text-gold">+91</span>
                   <input
                     id="phone"
                     className={inputCls}
@@ -178,20 +178,20 @@ export default function JoinFlow({ onJoined, notice }: { onJoined: (s: Session) 
                     placeholder="10 digits"
                   />
                 </div>
-                <p className="label mt-2 text-[10px] text-paper/70 leading-relaxed">
+                <p className="label mt-1.5 text-[10px] text-paper/70 leading-relaxed">
                   Confidential. Never broadcasted. Used solely to award prizes.
                 </p>
-                <div className="mt-4 flex gap-2">
+                <div className="mt-3 xs:mt-4 flex gap-2">
                   <button
                     type="button"
                     onClick={() => { setErr(''); setStep(1); }}
-                    className="min-h-[58px] border-2 border-paper/50 px-4 font-display text-[20px] uppercase text-paper hover:border-paper"
+                    className="min-h-[52px] xs:min-h-[58px] border-2 border-paper/50 px-3.5 font-display text-[18px] xs:text-[20px] uppercase text-paper hover:border-paper"
                   >
                     Back
                   </button>
                   <button
                     type="submit"
-                    className="min-h-[58px] flex-1 border-2 border-ink bg-red font-display text-[26px] uppercase tracking-wide text-paper shadow-press active:translate-y-1 active:shadow-none hover:bg-alarm transition-colors"
+                    className="min-h-[52px] xs:min-h-[58px] flex-1 border-2 border-ink bg-red font-display text-[22px] xs:text-[26px] uppercase tracking-wide text-paper shadow-press active:translate-y-1 active:shadow-none hover:bg-alarm transition-colors"
                   >
                     Next
                   </button>
@@ -202,26 +202,26 @@ export default function JoinFlow({ onJoined, notice }: { onJoined: (s: Session) 
             {step === 3 && (
               <div>
                 {/* Selected Character Preview Banner */}
-                <div className="my-2 bg-ink border-2 border-gold/80 p-3 rounded flex items-center gap-3.5 shadow-md">
-                  <Avatar id={avatar} size={68} />
-                  <div className="text-left">
-                    <span className="label text-[10px] text-gold uppercase tracking-wider font-bold">
+                <div className="my-1.5 xs:my-2 bg-ink border-2 border-gold/80 p-2 xs:p-2.5 rounded flex items-center gap-3 shadow-md">
+                  <Avatar id={avatar} size={54} />
+                  <div className="text-left min-w-0 flex-1">
+                    <span className="label text-[9px] xs:text-[10px] text-gold uppercase tracking-wider font-bold block">
                       Selected Operative:
                     </span>
-                    <p className="display text-[26px] text-paper leading-tight">
+                    <p className="display text-[22px] xs:text-[26px] text-paper leading-tight truncate">
                       {getAvatarMeta(avatar).name}
                     </p>
-                    <p className="label text-[12px] text-gold/90">
+                    <p className="label text-[10px] xs:text-[11px] text-gold/90 truncate">
                       {getAvatarMeta(avatar).role}
                     </p>
                   </div>
                 </div>
 
-                <h1 className="display mb-1 text-[34px]">Pick your character</h1>
-                <p className="mb-2 font-body text-[15px] text-paper/85 leading-snug">
+                <h1 className="display mb-0.5 text-[28px] xs:text-[32px]">Pick your character</h1>
+                <p className="mb-1.5 font-body text-[13px] xs:text-[15px] text-paper/85 leading-snug">
                   Choose your Money Heist movie character for the live leaderboard:
                 </p>
-                <div role="radiogroup" aria-label="Avatar" className="grid grid-cols-4 gap-2 max-h-[220px] overflow-y-auto pr-1">
+                <div role="radiogroup" aria-label="Avatar" className="grid grid-cols-4 gap-1.5 xs:gap-2 max-h-[175px] xs:max-h-[210px] overflow-y-auto pr-1">
                   {Array.from({ length: AVATAR_COUNT }, (_, i) => {
                     const meta = getAvatarMeta(i);
                     return (
@@ -232,23 +232,23 @@ export default function JoinFlow({ onJoined, notice }: { onJoined: (s: Session) 
                         aria-checked={avatar === i}
                         onClick={() => setAvatar(i)}
                         title={`${meta.name} - ${meta.role}`}
-                        className={`flex flex-col items-center justify-center p-1.5 rounded transition-all ${
+                        className={`flex flex-col items-center justify-center p-1 rounded transition-all ${
                           avatar === i ? 'bg-gold ring-2 ring-paper scale-105 shadow-md' : 'bg-ink hover:bg-plate'
                         }`}
                       >
-                        <Avatar id={i} size={48} />
-                        <span className={`label truncate max-w-[70px] text-[10px] mt-1 ${avatar === i ? 'text-ink font-bold' : 'text-paper/80'}`}>
+                        <Avatar id={i} size={42} />
+                        <span className={`label truncate max-w-[62px] text-[9px] mt-0.5 ${avatar === i ? 'text-ink font-bold' : 'text-paper/80'}`}>
                           {meta.name.split(' ')[0]}
                         </span>
                       </button>
                     );
                   })}
                 </div>
-                <div className="mt-4 flex gap-2">
+                <div className="mt-3 xs:mt-4 flex gap-2">
                   <button
                     type="button"
                     onClick={() => { setErr(''); setStep(2); }}
-                    className="min-h-[58px] border-2 border-paper/50 px-4 font-display text-[20px] uppercase text-paper"
+                    className="min-h-[52px] xs:min-h-[58px] border-2 border-paper/50 px-3.5 font-display text-[18px] xs:text-[20px] uppercase text-paper"
                   >
                     Back
                   </button>
@@ -256,7 +256,7 @@ export default function JoinFlow({ onJoined, notice }: { onJoined: (s: Session) 
                     type="button"
                     disabled={busy}
                     onClick={submit}
-                    className="min-h-[58px] flex-1 border-2 border-ink bg-red font-display text-[26px] uppercase tracking-wide text-paper shadow-press active:translate-y-1 active:shadow-none disabled:opacity-60 hover:bg-alarm transition-colors"
+                    className="min-h-[52px] xs:min-h-[58px] flex-1 border-2 border-ink bg-red font-display text-[22px] xs:text-[26px] uppercase tracking-wide text-paper shadow-press active:translate-y-1 active:shadow-none disabled:opacity-60 hover:bg-alarm transition-colors"
                   >
                     {busy ? 'Entering...' : 'Join crew'}
                   </button>
@@ -265,14 +265,13 @@ export default function JoinFlow({ onJoined, notice }: { onJoined: (s: Session) 
             )}
 
             {err && (
-              <p role="alert" className="mt-3 border-l-4 border-red bg-ink px-3 py-2 font-body text-[16px] font-semibold text-paper">
+              <p role="alert" className="mt-2.5 border-l-4 border-red bg-ink px-2.5 py-1.5 font-body text-[15px] font-semibold text-paper">
                 {err}
               </p>
             )}
           </Plate>
 
-          <TacticalBlueprintBanner className="mt-4" />
-          <Tape className="mt-3" />
+          <TacticalBlueprintBanner className="mt-3" />
         </main>
       </div>
       <Footer />
