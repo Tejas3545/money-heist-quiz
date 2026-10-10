@@ -3,6 +3,7 @@ const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   eslint: { ignoreDuringBuilds: true },
+  transpilePackages: ['framer-motion'],
   async headers() {
     return [
       {

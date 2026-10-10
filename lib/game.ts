@@ -1,7 +1,7 @@
 import 'server-only';
 import { redis, K } from './redis';
 import { LUA_CAS, LUA_PUBLIC } from './scripts';
-import { GRACE_MS, LEAD_MS, TOP_N } from './config';
+import { AVATAR_COUNT, GRACE_MS, LEAD_MS, TOP_N } from './config';
 import { QUESTIONS, questionMeta } from './questions';
 import { decodeScore } from './scoring';
 import type { AdminAction } from './validate';
@@ -95,24 +95,84 @@ export function toPublic(s: RawState, n: number, a: number, now: number): Public
   return base;
 }
 
-function parsePlayer(raw: string | null | undefined): { n: string; a: number } {
+const HEIST_CHARACTERS = [
+  'The Professor',
+  'Tokyo',
+  'Berlin',
+  'Nairobi',
+  'Rio',
+  'Denver',
+  'Helsinki',
+  'Oslo',
+  'Moscow',
+  'Lisbon',
+  'Stockholm',
+  'Bogotá',
+  'Palermo',
+  'Marseille',
+  'Manila',
+  'Alicia Sierra',
+  'Arturo Román',
+  'Colonel Tamayo',
+  'Tatiana',
+  'César Gandía',
+  'Dalí Mask (Classic)',
+  'Hooded Dalí Mask',
+  'Royal Mint Gold Mask',
+  'Shadow Dalí Mask',
+];
+
+function parsePlayer(raw: string | null | undefined, rankIndex: number): { n: string; a: number; ph?: string } {
   try {
-    const p = JSON.parse(raw || '{}') as { n?: string; a?: number };
-    return { n: p.n || 'Unknown', a: typeof p.a === 'number' ? p.a : 0 };
+    const p = JSON.parse(raw || '{}') as { n?: string; a?: number; ph?: string };
+    const charTitle = HEIST_CHARACTERS[rankIndex] || `Operative ${rankIndex + 1}`;
+    const displayName = p.n ? (rankIndex === 0 ? `${p.n} [The Professor]` : p.n) : charTitle;
+    const avatar = typeof p.a === 'number' ? p.a : (rankIndex === 0 ? 0 : rankIndex % AVATAR_COUNT);
+    return {
+      n: displayName,
+      a: avatar,
+      ph: p.ph,
+    };
   } catch {
-    return { n: 'Unknown', a: 0 };
+    const charTitle = HEIST_CHARACTERS[rankIndex] || `Operative ${rankIndex + 1}`;
+    return { n: charTitle, a: rankIndex % AVATAR_COUNT };
   }
 }
 
 function toRows(flat: unknown[], names: Record<string, string | null>, prev?: Map<string, number>): Row[] {
   const out: Row[] = [];
+  const seenIds = new Set<string>();
+
   for (let i = 0; i + 1 < flat.length; i += 2) {
     const id = String(flat[i]);
-    const p = parsePlayer(names[id]);
-    const row: Row = { id, n: p.n, a: p.a, pts: decodeScore(Number(flat[i + 1])).pts, rank: i / 2 + 1 };
+    seenIds.add(id);
+    const rankIndex = i / 2;
+    const p = parsePlayer(names[id], rankIndex);
+    const row: Row = {
+      id,
+      n: p.n,
+      a: p.a,
+      ph: p.ph,
+      pts: decodeScore(Number(flat[i + 1])).pts,
+      rank: rankIndex + 1,
+    };
     if (prev) row.prev = prev.get(id) ?? null;
     out.push(row);
   }
+
+  // Populate remaining ranks up to TOP_N (20) with Money Heist cast so the full crew is always visible
+  for (let rankIndex = out.length; rankIndex < TOP_N; rankIndex++) {
+    const charName = HEIST_CHARACTERS[rankIndex] || `Operative ${rankIndex + 1}`;
+    out.push({
+      id: `cast-${rankIndex}`,
+      n: charName,
+      a: rankIndex % AVATAR_COUNT,
+      pts: 0,
+      rank: rankIndex + 1,
+      prev: null,
+    });
+  }
+
   return out;
 }
 
@@ -174,7 +234,7 @@ async function startQuestion(s: RawState, n: number, now: number) {
   const m = questionMeta(n, s.seed);
   const limit = s.ovr || m.limit;
   const startAt = now + LEAD_MS;
-  return cas(s.v, { phase: 'QUESTION', qi: n, startAt, endAt: startAt + limit * 1000, limit, ci: m.correct, paused: 0, remMs: 0, ovr: 0 });
+  return cas(s.v, { phase: 'QUESTION', qi: n, startAt, endAt: startAt + limit * 1000, limit, ci: m.correct, paused: 0, remMs: 0, ovr: s.ovr });
 }
 
 export function preview(qi: number, seed: string): PreviewQ | null {

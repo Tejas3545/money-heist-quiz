@@ -1,5 +1,7 @@
 'use client';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { DownloadIcon, Header, TrophyIcon } from '../ui';
+import * as sfx from '@/lib/sfx';
 import type { AdminData, PreviewQ } from '@/lib/types';
 
 // Plain, dark, same palette, big buttons. No decoration. Works on a phone held on stage.
@@ -20,6 +22,7 @@ export default function AdminApp() {
   const [find, setFind] = useState('');
   const [found, setFound] = useState<{ pid: string; n: string; ph: string }[]>([]);
   const [resetText, setResetText] = useState('');
+  const [customSec, setCustomSec] = useState('');
   const offset = useRef(0);
   const [now, setNow] = useState(0);
 
@@ -87,13 +90,17 @@ export default function AdminApp() {
   const s = d.state;
   const remaining = s.paused ? s.remMs : Math.max(0, s.endAt - now);
   const lastDone = s.phase === 'REVEAL' && s.qi + 1 >= d.total;
-  const timerOn = (n: number) => s.ovr === n;
+  const timerOn = (n: number) => (s.ovr ? s.ovr === n : (d.next?.limit ?? 15) === n);
   const stat = 'border-2 border-paper/25 p-2';
   const lbl = 'block font-body text-[13px] uppercase tracking-wide text-paper/75';
 
   return (
-    <main className="mx-auto max-w-3xl p-3 pb-16 font-body">
-      <h1 className="mb-2 text-[24px] font-bold">HQ / Code Carnival 3.0</h1>
+    <div>
+      <Header fullWidth />
+      <main className="mx-auto max-w-4xl p-3 pb-16 font-body">
+        <div className="flex items-center justify-between gap-2 mb-3">
+          <h1 className="text-[26px] font-bold">HQ / Code Carnival 3.0</h1>
+        </div>
 
       <section className="grid grid-cols-2 gap-2 sm:grid-cols-3" aria-label="Live stats">
         <div className={stat}><span className={lbl}>Phase</span><b className="text-[26px]">{s.phase}{s.paused ? ' (paused)' : ''}</b></div>
@@ -123,22 +130,74 @@ export default function AdminApp() {
         {s.phase === 'REVEAL' && (
           <>
             {!lastDone && <button disabled={busy} className={`${btn} min-h-[110px] bg-red text-[34px] text-paper`} onClick={() => act({ type: 'next' })}>Next question ({s.qi + 2})</button>}
-            <button disabled={busy} className={`${btn} ${lastDone ? 'min-h-[110px] bg-gold text-[30px] text-ink' : ''}`} onClick={() => act({ type: 'showFinal' })}>Show final</button>
+            <button disabled={busy} className={`${btn} ${lastDone ? 'min-h-[110px] bg-gold text-[30px] text-ink' : 'bg-gold/90 text-ink'} flex items-center justify-center gap-2`} onClick={() => act({ type: 'showFinal' })}>
+              <TrophyIcon size={28} /> Display Top 10 Winners (Projector & Phones)
+            </button>
           </>
         )}
-        {s.phase === 'FINAL' && <p className="border-2 border-gold p-3 text-[18px]">Final is on screen. Export the CSV below, then reset when the event is over.</p>}
+        {s.phase === 'FINAL' && (
+          <div className="border-2 border-gold p-4 text-center bg-gold/10">
+            <h3 className="display text-[28px] text-gold">Top 10 Final Displayed on All Screens</h3>
+            <p className="font-body text-[17px] text-paper/90 mt-1">
+              Projector and player panels are currently showing the top 10 prize winners list with firecracker animations.
+            </p>
+            <div className="mt-3 flex gap-2 justify-center">
+              <a className={`${btn} !w-auto px-6 bg-gold text-ink flex items-center justify-center gap-2`} href="/api/admin/export?scope=top10" download>
+                <DownloadIcon size={22} /> Download Top 10 Winners CSV
+              </a>
+            </div>
+          </div>
+        )}
       </section>
 
-      <section className="mt-6" aria-label="Timer override">
-        <h2 className="mb-1 text-[18px] font-bold">Timer for the next question</h2>
-        <p className="mb-2 text-[15px] text-paper/80">
-          {d.next ? `Question ${d.next.n} default: ${d.next.limit}s. ` : ''}{s.ovr ? `Override set: ${s.ovr}s.` : 'No override set.'}
+      <section className="mt-6 border-2 border-paper/25 p-3 sm:p-4 bg-ink/60 rounded" aria-label="Question timer">
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+          <h2 className="text-[19px] font-bold text-gold">Variable Question Timer</h2>
+          <span className="font-type text-[15px] text-paper/90 bg-plate px-2.5 py-0.5 border border-paper/30">
+            Active: <b className="text-gold text-[17px]">{s.ovr || d.next?.limit || 15}s</b>
+          </span>
+        </div>
+        <p className="mb-2 text-[14px] text-paper/75">
+          Select or enter variable time in seconds for the questions:
         </p>
-        <div className="grid grid-cols-5 gap-2">
-          {[10, 15, 20, 30].map((n) => (
-            <button key={n} disabled={busy || s.phase === 'QUESTION'} aria-pressed={timerOn(n)} className={`${btn} ${timerOn(n) ? 'bg-gold text-ink' : ''}`} onClick={() => act({ type: 'setTimer', seconds: n })}>{n}s</button>
+        <div className="grid grid-cols-4 sm:grid-cols-7 gap-1.5 sm:gap-2">
+          {[5, 10, 15, 20, 30, 45, 60].map((n) => (
+            <button
+              key={n}
+              disabled={busy || s.phase === 'QUESTION'}
+              aria-pressed={timerOn(n)}
+              className={`${btn} !min-h-[46px] !text-[16px] ${timerOn(n) ? 'bg-gold text-ink border-gold' : ''}`}
+              onClick={() => act({ type: 'setTimer', seconds: n })}
+            >
+              {n}s
+            </button>
           ))}
-          <button disabled={busy || !s.ovr} className={btn} onClick={() => act({ type: 'clearTimer' })}>Default</button>
+        </div>
+        <div className="mt-3 flex gap-2">
+          <input
+            type="number"
+            min="3"
+            max="300"
+            placeholder="Custom seconds (e.g. 25)"
+            value={customSec}
+            onChange={(e) => setCustomSec(e.target.value)}
+            disabled={busy || s.phase === 'QUESTION'}
+            className="min-h-[50px] min-w-0 flex-1 border-2 border-paper/50 bg-ink px-3 text-[18px] text-paper"
+          />
+          <button
+            type="button"
+            disabled={busy || s.phase === 'QUESTION' || !customSec || isNaN(Number(customSec)) || Number(customSec) < 3}
+            className={`${btn} !w-auto !min-h-[50px] px-5 bg-gold text-ink font-bold text-[16px]`}
+            onClick={() => {
+              const num = parseInt(customSec, 10);
+              if (num >= 3 && num <= 300) {
+                void act({ type: 'setTimer', seconds: num });
+                setCustomSec('');
+              }
+            }}
+          >
+            Set Custom
+          </button>
         </div>
       </section>
 
@@ -190,6 +249,7 @@ export default function AdminApp() {
         </div>
       </section>
     </main>
+  </div>
   );
 }
 

@@ -5,13 +5,13 @@ export const MIN_POINTS = 100;
 
 /** Network grace after endAt during which an answer is still accepted (server clock). */
 export const GRACE_MS = 1000;
-/** Pre-roll between admin pressing start and the question opening, so every phone has time to fetch it. */
-export const LEAD_MS = 4000;
+/** Pre-roll between admin pressing start and the question opening: exactly 10s clock on projector & phones */
+export const LEAD_MS = 10000;
 /** Tie-break scale: sorted-set score = points * TIE_SCALE - cumulativeResponseMs. */
 export const TIE_SCALE = 1_000_000;
 
 export const TIME_OPTIONS = [10, 15, 20, 30] as const;
-export const TOP_N = 10;
+export const TOP_N = 20;
 export const AVATAR_COUNT = 24;
 export const NAME_MIN = 2;
 export const NAME_MAX = 24;

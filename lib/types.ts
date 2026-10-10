@@ -31,6 +31,7 @@ export interface Row {
   a: number;
   pts: number;
   rank: number;
+  ph?: string;
   /** cumulative board only: previous rank, null = was outside the top list / new, undefined = no previous board */
   prev?: number | null;
 }

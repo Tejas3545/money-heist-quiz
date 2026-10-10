@@ -5,7 +5,7 @@ import { useReducedMotion } from 'framer-motion';
 import { Avatar } from '../avatars';
 import { Board } from '../Board';
 import { DistChart } from '../DistChart';
-import { AdscStamp, AtmiyaLogo, CaseLabel, HeistClock, OPTION_STYLE, ReconnectBanner, RollNumber, ShapeIcon, Stamp, Tape, ThinBar, TitleLockup, VolumeIcon, m } from '../ui';
+import { AdscStamp, AtmiyaLogo, CaseLabel, HeistClock, OPTION_STYLE, ReconnectBanner, RollNumber, ShapeIcon, SoundButton, Stamp, Tape, ThinBar, TitleLockup, VolumeIcon, m } from '../ui';
 import { useGame, useNow, useReveal } from '@/lib/useGame';
 import type { PublicState, Row, Snapshot } from '@/lib/types';
 
@@ -107,18 +107,11 @@ export default function ScreenApp() {
     return () => { dead = true; clearInterval(id); };
   }, [state?.phase]);
 
-  const enableAudio = async () => {
-    const s = await import('@/lib/sfx');
-    s.initAudio();
-    sfx.current = s;
-    setAudio({ on: true, muted: false });
-    s.lock();
-  };
-  const toggleMute = () => {
-    const muted = !audio.muted;
-    sfx.current?.setMuted(muted);
-    setAudio({ on: true, muted });
-  };
+  useEffect(() => {
+    void import('@/lib/sfx').then((s) => {
+      sfx.current = s;
+    });
+  }, []);
 
   let scene = 'boot';
   if (state) {
@@ -130,10 +123,27 @@ export default function ScreenApp() {
   const remaining = state ? (state.paused ? state.remMs : Math.max(0, state.endAt - t)) : 0;
   const secLeft = Math.ceil(remaining / 1000);
 
+  const preRemaining = state && !state.paused && t > 0 && t < state.startAt ? Math.max(0, state.startAt - t) : 0;
+  const preSecLeft = Math.ceil(preRemaining / 1000);
+
+  useEffect(() => {
+    if (scene === 'pre' && preSecLeft > 0) {
+      sfx.current?.tick(preSecLeft <= 3);
+    }
+  }, [preSecLeft, scene]);
+
   useEffect(() => {
     if (scene === 'pre') sfx.current?.lock();
-    if (scene === 'reveal' || scene === 'final') sfx.current?.thud();
+    if (scene === 'reveal') {
+      sfx.current?.thud();
+      sfx.current?.bellaCiaoEffect();
+    }
+    if (scene === 'final') {
+      sfx.current?.thud();
+      sfx.current?.firecrackerEffect();
+    }
   }, [scene]);
+
   useEffect(() => {
     if (scene === 'q' && state && !state.paused && secLeft > 0) sfx.current?.tick(secLeft <= 3);
   }, [secLeft, scene, state]);
@@ -141,21 +151,16 @@ export default function ScreenApp() {
   return (
     <Stage>
       <div className="relative flex h-full w-full flex-col bg-ink">
-        {/* top letterbox bar */}
-        <div className="flex h-[76px] shrink-0 items-center justify-between bg-ink px-10">
-          <AdscStamp size={46} />
-          <p className="label text-[22px] text-paper/80">Operation Code Carnival / Heist Day</p>
-          <div className="flex items-center gap-6">
-            {!audio.on ? (
-              <button onClick={enableAudio} className="label border-2 border-paper/50 px-4 py-2 text-[18px] text-paper">Tap to enable sound</button>
-            ) : (
-              <button onClick={toggleMute} className="flex items-center gap-2 border-2 border-paper/50 px-3 py-2 text-paper" aria-pressed={audio.muted} aria-label={audio.muted ? 'Unmute' : 'Mute'}>
-                <VolumeIcon off={audio.muted} />
-                <span className="label text-[16px]">{audio.muted ? 'Muted' : 'Sound on'}</span>
-              </button>
-            )}
-            <AtmiyaLogo size={52} />
+        {/* top letterbox bar with large readable framed logos */}
+        <div className="flex h-[114px] shrink-0 items-center justify-between bg-ink px-8 border-b-2 border-gold/40 shadow-lg">
+          <AtmiyaLogo big />
+
+          <div className="flex items-center justify-center gap-6">
+            <p className="label text-[28px] text-paper font-bold tracking-[0.25em]">OPERATION CODE CARNIVAL / HEIST DAY</p>
+            <SoundButton size="lg" />
           </div>
+
+          <AdscStamp big />
         </div>
         <Tape />
 
@@ -277,23 +282,28 @@ function RevealScene({ snap }: { snap: Snapshot }) {
         <CaseLabel className="!text-[24px] text-gold">Plan {String(snap.q + 1).padStart(2, '0')} result</CaseLabel>
         <p className="line-clamp-1 font-body text-[30px] font-semibold text-paper/85">{snap.text}</p>
       </div>
-      <div className="mt-5 grid flex-1 grid-cols-[520px_580px_620px] gap-8">
-        <m.section {...slide(0)} className="plate flex flex-col p-6">
-          <CaseLabel className="!text-[20px] text-gold">The answer</CaseLabel>
-          <div className={`mt-2 flex items-center gap-4 border-[4px] px-5 py-4 font-body text-[40px] font-bold leading-tight ${OPTION_STYLE[snap.correct]}`}>
+      <div className="mt-5 grid flex-1 grid-cols-[680px_520px_520px] gap-8">
+        <m.section {...slide(0)} className="plate flex flex-col p-6 border-2 border-gold/40">
+          <div className="flex items-center justify-between">
+            <CaseLabel className="!text-[22px] text-gold">Real-Time Distribution Graph</CaseLabel>
+            <span className="label text-[14px] text-gold font-bold bg-ink px-2 py-0.5 border border-gold/30">Crew Breakdown</span>
+          </div>
+          <div className={`mt-3 flex items-center gap-4 border-[4px] px-5 py-4 font-body text-[38px] font-bold leading-tight ${OPTION_STYLE[snap.correct]}`}>
             <ShapeIcon i={snap.correct} size={48} />
             <span>{snap.options[snap.correct]}</span>
           </div>
           <div className="mt-6 flex-1"><DistChart dist={snap.dist} correct={snap.correct} options={snap.options} big /></div>
-          <p className="mt-4 font-type text-[26px] leading-snug text-paper/90">{snap.fact}</p>
+          <p className="mt-4 font-type text-[24px] leading-snug text-paper/90">{snap.fact}</p>
         </m.section>
         <m.section {...slide(2.2)} className="plate p-6">
           <CaseLabel className="!text-[20px] text-gold">This plan / fastest hands</CaseLabel>
           <Board rows={snap.perQ} mode="q" size="lg" delay={D(2.6)} empty="Nobody cracked this one. The Professor is not surprised." />
         </m.section>
         <m.section {...slide(4.6)} className="plate p-6">
-          <CaseLabel className="!text-[20px] text-gold">The board / overall</CaseLabel>
-          <Board rows={snap.cum} mode="cum" size="lg" delay={D(5.0)} />
+          <CaseLabel className="!text-[20px] text-gold">The board / Top 20 crew</CaseLabel>
+          <div className="h-[680px] overflow-y-auto pr-1">
+            <Board rows={snap.cum} mode="cum" size="lg" delay={D(5.0)} />
+          </div>
         </m.section>
       </div>
     </div>

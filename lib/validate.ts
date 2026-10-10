@@ -47,14 +47,12 @@ export const answerSchema = z.object({
   c: z.number().int().min(0).max(3),
 });
 
-const timeSchema = z.union(TIME_OPTIONS.map((t) => z.literal(t)) as [z.ZodLiteral<10>, z.ZodLiteral<15>, z.ZodLiteral<20>, z.ZodLiteral<30>]);
-
 export const actionSchema = z.discriminatedUnion('type', [
   z.object({
     type: z.enum(['openLobby', 'startGame', 'next', 'endQuestion', 'showReveal', 'pause', 'resume', 'showFinal', 'reset']),
     v: z.number().int(),
   }),
-  z.object({ type: z.literal('setTimer'), v: z.number().int(), seconds: timeSchema }),
+  z.object({ type: z.literal('setTimer'), v: z.number().int(), seconds: z.number().int().min(3).max(600) }),
   z.object({ type: z.literal('clearTimer'), v: z.number().int() }),
   z.object({ type: z.literal('setCode'), v: z.number().int(), code: z.string().trim().min(3).max(24) }),
   z.object({ type: z.literal('kick'), v: z.number().int().optional(), pid: z.string().regex(/^[a-f0-9]{16}$/) }),

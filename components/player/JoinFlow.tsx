@@ -1,6 +1,6 @@
 'use client';
 import { useCallback, useEffect, useState } from 'react';
-import { Avatar } from '../avatars';
+import { Avatar, getAvatarMeta } from '../avatars';
 import { AVATAR_COUNT, NAME_MAX, NAME_MIN, normalizePhone } from '@/lib/config';
 import type { Session } from '@/lib/types';
 import { CaseLabel, Footer, Header, Plate, Stamp, Tape } from '../ui';
@@ -29,6 +29,8 @@ export function loadDraft(): { code: string; name: string; phone: string } {
     return { code: '', name: '', phone: '' };
   }
 }
+
+import { DossierGraphic, HeistMaskGraphic, TacticalBlueprintBanner, VaultDoorGraphic } from '../graphics';
 
 const inputCls =
   'block w-full border-2 border-paper/40 bg-ink px-3 py-3 font-type text-[20px] text-paper placeholder:text-paper/50 focus:border-gold';
@@ -89,75 +91,191 @@ export default function JoinFlow({ onJoined, notice }: { onJoined: (s: Session) 
   }, [code, name, phone, avatar, onJoined]);
 
   return (
-    <>
-      <Header />
-      <main className="mx-auto max-w-md px-3 pt-5">
-        <div className="mb-4 flex items-center justify-between">
-          <CaseLabel>Case file 03 / Operation Code Carnival</CaseLabel>
-          <Stamp tone="paper" className="!border-2 text-[12px]">Confidential</Stamp>
-        </div>
+    <div className="min-h-[100dvh] flex flex-col justify-between">
+      <div>
+        <Header />
+        <main className="mx-auto max-w-md px-3 pt-3">
+          <div className="mb-3 flex items-center justify-between">
+            <CaseLabel>Case file 03 / Operation Code Carnival</CaseLabel>
+            <Stamp tone="paper" className="!border-2 text-[12px]">Confidential</Stamp>
+          </div>
 
-        <Plate className="p-4">
-          <CaseLabel className="mb-3 text-gold">Step {step} of 3</CaseLabel>
-
-          {step === 1 && (
-            <form onSubmit={(e) => { e.preventDefault(); next1(); }}>
-              <h1 className="display mb-1 text-[40px]">Enter the code</h1>
-              <p className="mb-4 font-body text-[17px] text-paper/85">One code for the whole crew. It is on the big screen.</p>
-              <label htmlFor="code" className="label mb-1 block text-[12px]">Crew code</label>
-              <input id="code" className={`${inputCls} uppercase tracking-[0.3em]`} value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} autoCapitalize="characters" autoComplete="off" autoCorrect="off" spellCheck={false} maxLength={32} placeholder="CODE" />
-              <button type="submit" className="mt-5 min-h-[60px] w-full border-2 border-ink bg-red font-display text-[26px] uppercase tracking-wide text-paper shadow-press active:translate-y-1 active:shadow-none">
-                Enter the vault
-              </button>
-            </form>
-          )}
-
-          {step === 2 && (
-            <form onSubmit={(e) => { e.preventDefault(); next2(); }}>
-              <h1 className="display mb-1 text-[40px]">Your cover story</h1>
-              <p className="mb-4 font-body text-[17px] text-paper/85">A codename for the leaderboard and a number so we can reach the winners.</p>
-              <label htmlFor="name" className="label mb-1 block text-[12px]">Codename ({NAME_MIN} to {NAME_MAX} characters)</label>
-              <input id="name" className={inputCls} value={name} onChange={(e) => setName(e.target.value)} maxLength={NAME_MAX + 6} autoComplete="nickname" placeholder="Codename" />
-              <label htmlFor="phone" className="label mb-1 mt-4 block text-[12px]">Mobile number</label>
-              <div className="flex">
-                <span className="flex items-center border-2 border-r-0 border-paper/40 bg-plate px-3 font-type text-[20px]">+91</span>
-                <input id="phone" className={inputCls} value={phone} onChange={(e) => setPhone(e.target.value.replace(/[^\d+\s]/g, ''))} inputMode="numeric" autoComplete="tel-national" maxLength={14} placeholder="10 digits" />
-              </div>
-              <p className="label mt-2 text-[11px] text-paper/70">Never shown to anyone. Used only to contact gift winners. Same number brings your score back.</p>
-              <div className="mt-5 flex gap-2">
-                <button type="button" onClick={() => { setErr(''); setStep(1); }} className="min-h-[60px] border-2 border-paper/50 px-5 font-display text-[20px] uppercase text-paper">Back</button>
-                <button type="submit" className="min-h-[60px] flex-1 border-2 border-ink bg-red font-display text-[26px] uppercase tracking-wide text-paper shadow-press active:translate-y-1 active:shadow-none">Next</button>
-              </div>
-            </form>
-          )}
-
-          {step === 3 && (
-            <div>
-              <h1 className="display mb-1 text-[40px]">Pick your face</h1>
-              <p className="mb-3 font-body text-[17px] text-paper/85">This follows you onto the leaderboards.</p>
-              <div role="radiogroup" aria-label="Avatar" className="grid grid-cols-4 gap-2">
-                {Array.from({ length: AVATAR_COUNT }, (_, i) => (
-                  <button key={i} type="button" role="radio" aria-checked={avatar === i} onClick={() => setAvatar(i)} className={`flex aspect-square items-center justify-center p-1 ${avatar === i ? 'bg-gold' : 'bg-ink'}`}>
-                    <Avatar id={i} size={64} />
-                  </button>
-                ))}
-              </div>
-              <div className="mt-5 flex gap-2">
-                <button type="button" onClick={() => { setErr(''); setStep(2); }} className="min-h-[60px] border-2 border-paper/50 px-5 font-display text-[20px] uppercase text-paper">Back</button>
-                <button type="button" disabled={busy} onClick={submit} className="min-h-[60px] flex-1 border-2 border-ink bg-red font-display text-[26px] uppercase tracking-wide text-paper shadow-press active:translate-y-1 active:shadow-none disabled:opacity-60">
-                  {busy ? 'Checking the plan...' : 'Join the crew'}
-                </button>
-              </div>
+          <Plate className="p-4 shadow-xl">
+            <div className="flex items-center justify-between mb-2">
+              <CaseLabel className="text-gold">Step {step} of 3</CaseLabel>
+              <span className="font-mono text-[11px] text-paper/60 uppercase">
+                {step === 1 ? 'VAULT ACCESS' : step === 2 ? 'OPERATIVE FILE' : 'CREW IDENTITY'}
+              </span>
             </div>
-          )}
 
-          {err && (
-            <p role="alert" className="mt-4 border-l-4 border-red bg-ink px-3 py-2 font-body text-[17px] font-semibold">{err}</p>
-          )}
-        </Plate>
-        <Tape className="mt-6" />
-      </main>
+            {step === 1 && (
+              <form onSubmit={(e) => { e.preventDefault(); next1(); }}>
+                {/* Hero Vault Door Graphic eliminates top dead space */}
+                <div className="my-2 bg-ink/60 border border-paper/15 p-2 rounded">
+                  <VaultDoorGraphic height={115} />
+                </div>
+
+                <h1 className="display mb-1 text-[38px]">Enter the code</h1>
+                <p className="mb-3 font-body text-[16px] text-paper/85 leading-snug">
+                  One code for the whole crew. It is displayed on the big screen.
+                </p>
+                <label htmlFor="code" className="label mb-1 block text-[12px] text-gold">Crew code</label>
+                <input
+                  id="code"
+                  className={`${inputCls} uppercase tracking-[0.3em]`}
+                  value={code}
+                  onChange={(e) => setCode(e.target.value.toUpperCase())}
+                  autoCapitalize="characters"
+                  autoComplete="off"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  maxLength={32}
+                  placeholder="CODE"
+                />
+                <button
+                  type="submit"
+                  className="mt-4 min-h-[58px] w-full border-2 border-ink bg-red font-display text-[26px] uppercase tracking-wide text-paper shadow-press active:translate-y-1 active:shadow-none hover:bg-alarm transition-colors"
+                >
+                  Enter the vault
+                </button>
+              </form>
+            )}
+
+            {step === 2 && (
+              <form onSubmit={(e) => { e.preventDefault(); next2(); }}>
+                {/* Confidential Dossier Graphic eliminates dead space */}
+                <div className="my-2 bg-ink/60 border border-paper/15 p-1 rounded">
+                  <DossierGraphic height={105} />
+                </div>
+
+                <h1 className="display mb-1 text-[38px]">Your cover story</h1>
+                <p className="mb-3 font-body text-[16px] text-paper/85 leading-snug">
+                  A codename for the leaderboard and mobile number for gift handover.
+                </p>
+                <label htmlFor="name" className="label mb-1 block text-[12px] text-gold">
+                  Codename ({NAME_MIN} to {NAME_MAX} characters)
+                </label>
+                <input
+                  id="name"
+                  className={inputCls}
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  maxLength={NAME_MAX + 6}
+                  autoComplete="nickname"
+                  placeholder="e.g. TOKYO / BERLIN"
+                />
+                <label htmlFor="phone" className="label mb-1 mt-3 block text-[12px] text-gold">Mobile number</label>
+                <div className="flex">
+                  <span className="flex items-center border-2 border-r-0 border-paper/40 bg-plate px-3 font-type text-[20px] text-gold">+91</span>
+                  <input
+                    id="phone"
+                    className={inputCls}
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value.replace(/[^\d+\s]/g, ''))}
+                    inputMode="numeric"
+                    autoComplete="tel-national"
+                    maxLength={14}
+                    placeholder="10 digits"
+                  />
+                </div>
+                <p className="label mt-2 text-[10px] text-paper/70 leading-relaxed">
+                  Confidential. Never broadcasted. Used solely to award prizes.
+                </p>
+                <div className="mt-4 flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => { setErr(''); setStep(1); }}
+                    className="min-h-[58px] border-2 border-paper/50 px-4 font-display text-[20px] uppercase text-paper hover:border-paper"
+                  >
+                    Back
+                  </button>
+                  <button
+                    type="submit"
+                    className="min-h-[58px] flex-1 border-2 border-ink bg-red font-display text-[26px] uppercase tracking-wide text-paper shadow-press active:translate-y-1 active:shadow-none hover:bg-alarm transition-colors"
+                  >
+                    Next
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {step === 3 && (
+              <div>
+                {/* Selected Character Preview Banner */}
+                <div className="my-2 bg-ink border-2 border-gold/80 p-3 rounded flex items-center gap-3.5 shadow-md">
+                  <Avatar id={avatar} size={68} />
+                  <div className="text-left">
+                    <span className="label text-[10px] text-gold uppercase tracking-wider font-bold">
+                      Selected Operative:
+                    </span>
+                    <p className="display text-[26px] text-paper leading-tight">
+                      {getAvatarMeta(avatar).name}
+                    </p>
+                    <p className="label text-[12px] text-gold/90">
+                      {getAvatarMeta(avatar).role}
+                    </p>
+                  </div>
+                </div>
+
+                <h1 className="display mb-1 text-[34px]">Pick your character</h1>
+                <p className="mb-2 font-body text-[15px] text-paper/85 leading-snug">
+                  Choose your Money Heist movie character for the live leaderboard:
+                </p>
+                <div role="radiogroup" aria-label="Avatar" className="grid grid-cols-4 gap-2 max-h-[220px] overflow-y-auto pr-1">
+                  {Array.from({ length: AVATAR_COUNT }, (_, i) => {
+                    const meta = getAvatarMeta(i);
+                    return (
+                      <button
+                        key={i}
+                        type="button"
+                        role="radio"
+                        aria-checked={avatar === i}
+                        onClick={() => setAvatar(i)}
+                        title={`${meta.name} - ${meta.role}`}
+                        className={`flex flex-col items-center justify-center p-1.5 rounded transition-all ${
+                          avatar === i ? 'bg-gold ring-2 ring-paper scale-105 shadow-md' : 'bg-ink hover:bg-plate'
+                        }`}
+                      >
+                        <Avatar id={i} size={48} />
+                        <span className={`label truncate max-w-[70px] text-[10px] mt-1 ${avatar === i ? 'text-ink font-bold' : 'text-paper/80'}`}>
+                          {meta.name.split(' ')[0]}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="mt-4 flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => { setErr(''); setStep(2); }}
+                    className="min-h-[58px] border-2 border-paper/50 px-4 font-display text-[20px] uppercase text-paper"
+                  >
+                    Back
+                  </button>
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={submit}
+                    className="min-h-[58px] flex-1 border-2 border-ink bg-red font-display text-[26px] uppercase tracking-wide text-paper shadow-press active:translate-y-1 active:shadow-none disabled:opacity-60 hover:bg-alarm transition-colors"
+                  >
+                    {busy ? 'Entering...' : 'Join crew'}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {err && (
+              <p role="alert" className="mt-3 border-l-4 border-red bg-ink px-3 py-2 font-body text-[16px] font-semibold text-paper">
+                {err}
+              </p>
+            )}
+          </Plate>
+
+          <TacticalBlueprintBanner className="mt-4" />
+          <Tape className="mt-3" />
+        </main>
+      </div>
       <Footer />
-    </>
+    </div>
   );
 }
