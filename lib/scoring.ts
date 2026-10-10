@@ -13,7 +13,7 @@ export function computePoints(remainingMs: number, limitMs: number): number {
 export const encodeDelta = (pts: number, ms: number) => pts * TIE_SCALE - ms;
 
 export function decodeScore(score: number): { pts: number; ms: number } {
-  if (!Number.isFinite(score) || score <= 0) return { pts: 0, ms: 0 };
-  const pts = Math.ceil(score / TIE_SCALE);
+  if (!Number.isFinite(score)) return { pts: 0, ms: 0 };
+  const pts = Math.round(score / TIE_SCALE);
   return { pts, ms: pts * TIE_SCALE - score };
 }

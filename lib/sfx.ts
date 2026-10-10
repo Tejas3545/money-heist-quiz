@@ -223,13 +223,28 @@ function playNote(freq: number, startTime: number, duration: number, peak = 0.25
   }
 }
 
-/** Mechanical countdown tick sound */
+let tickCount = 0;
+
+/** Realistic mechanical clockwork countdown tick sound */
 export function tick(urgent = false) {
   initAudio();
   if (!ctx || muted) return;
+  if (ctx.state === 'suspended') {
+    void ctx.resume();
+  }
   const t = ctx.currentTime;
-  noise(t, 0.04, urgent ? 3400 : 2200, 6, urgent ? 0.6 : 0.35);
-  playNote(urgent ? 1500 : 1000, t, 0.03, urgent ? 0.12 : 0.06, 'square');
+  tickCount++;
+  const isTick = tickCount % 2 === 0;
+
+  // 1. Sharp mechanical pallet click (metal escapement impact)
+  const clickFreq = urgent ? 4400 : (isTick ? 3400 : 2800);
+  noise(t, 0.03, clickFreq, 8, urgent ? 0.95 : 0.7);
+
+  // 2. Resonating metallic clock body gear ping (alternating tick / tock)
+  const bodyFreq = urgent ? 1650 : (isTick ? 1200 : 920);
+  playNote(bodyFreq, t, 0.035, urgent ? 0.28 : 0.16, 'triangle');
+  // Subtle sub-harmonic case resonance
+  playNote(bodyFreq / 2, t, 0.02, urgent ? 0.22 : 0.12, 'sine');
 }
 
 /** Vault lock / answer chosen click */

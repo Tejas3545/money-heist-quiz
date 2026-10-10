@@ -47,7 +47,7 @@ export function Board({ rows, mode, size = 'sm', meId, delay = 0, empty = 'Nobod
           const shift = showMove && typeof r.prev === 'number' ? (r.prev - r.rank) * H : 0;
           const mine = meId && r.id === meId;
           const isProfessor = r.rank === 1;
-          const avatarId = isProfessor ? 1 : r.a;
+          const avatarId = typeof r.a === 'number' ? r.a : 0;
           return (
             <m.li
               key={r.id}
@@ -94,7 +94,7 @@ export function Board({ rows, mode, size = 'sm', meId, delay = 0, empty = 'Nobod
           <div className="plate max-w-sm w-full p-5 text-center shadow-2xl border-2 border-gold" onClick={(e) => e.stopPropagation()}>
             <p className="label text-gold text-[12px] mb-2">Operative Dossier / Verification</p>
             <div className="flex justify-center mb-3">
-              <Avatar id={inspected.rank === 1 ? 1 : inspected.a} size={80} />
+              <Avatar id={inspected.a} size={80} />
             </div>
             <h3 className="display text-[32px] text-paper">{inspected.n}</h3>
             <p className="display num text-[42px] text-gold">Rank #{inspected.rank}</p>

@@ -344,15 +344,21 @@ function RevealView({ state, snap, me, session }: { state: PublicState; snap: Sn
       {!ok && answered && (
         <div className="mt-3 border-2 border-red bg-red/10 p-3 text-center">
           <p className="display text-[26px] text-alarm tracking-wide">LOCKED IN CELL / WRONG CODE</p>
-          <p className="label text-[11px] text-paper/80 mt-1">JAIL EFFECT ACTIVE - 0 POINTS AWARDED</p>
+          <p className="label text-[11px] text-paper/80 mt-1">JAIL EFFECT ACTIVE — 50 POINTS PENALTY</p>
         </div>
       )}
 
       <Plate className="mt-2 px-3 py-3 xs:px-4 xs:py-3.5 text-center">
         <p className="font-body text-[16px] xs:text-[19px] font-bold">
-          {ok ? `Vault cracked! +${gain.toLocaleString('en-IN')} points!` : answered ? 'Wrong code. You got caught in the crossfire.' : 'No answer logged. The Professor noticed.'}
+          {ok
+            ? `Vault cracked! +${gain.toLocaleString('en-IN')} points!`
+            : answered
+              ? 'Wrong code (-50 points penalty). Caught in the crossfire.'
+              : 'No answer logged (+-0 points). The Professor noticed.'}
         </p>
-        <p className="display num mt-0.5 text-[54px] xs:text-[66px] text-gold leading-none">+<RollNumber from={0} value={gain} /></p>
+        <p className={`display num mt-0.5 text-[54px] xs:text-[66px] leading-none ${gain < 0 ? 'text-alarm' : 'text-gold'}`}>
+          {gain > 0 ? '+' : ''}<RollNumber from={0} value={gain} />
+        </p>
         <span className="label text-[9px] xs:text-[10px] text-gold/80 block mt-1 uppercase">Computed Real Time by Response Speed</span>
       </Plate>
 

@@ -31,16 +31,16 @@ if correct then
   local mn = tonumber(ARGV[5])
   local mx = tonumber(ARGV[6])
   pts = math.floor(mn + (mx - mn) * (remaining / limitMs) + 0.5)
+else
+  pts = -50
 end
 local q = st[2]
 local rec = string.format('%d|%d|%d', choice, pts, elapsed)
 if redis.call('HSETNX', 'a:' .. q, ARGV[1], rec) == 0 then return 'DUP' end
 redis.call('HINCRBY', 'd:' .. q, tostring(choice), 1)
-if correct then
-  local delta = pts * 1000000 - elapsed
-  redis.call('ZADD', 'zq:' .. q, delta, ARGV[1])
-  redis.call('ZINCRBY', KEYS[3], delta, ARGV[1])
-end
+local delta = pts * 1000000 - elapsed
+redis.call('ZADD', 'zq:' .. q, delta, ARGV[1])
+redis.call('ZINCRBY', KEYS[3], delta, ARGV[1])
 return 'OK'
 `;
 

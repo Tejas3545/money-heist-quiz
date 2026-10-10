@@ -185,6 +185,96 @@ export default function ScreenApp() {
   );
 }
 
+function StampClock({ ms, over }: { ms: number; over: boolean }) {
+  const clamped = Math.max(0, ms);
+  const secs = Math.ceil(clamped / 1000);
+  const alarm = clamped > 0 && clamped <= 3500;
+
+  return (
+    <m.div
+      key={over ? 'over' : secs}
+      initial={{ scale: 1.12, rotate: -2 }}
+      animate={{ scale: 1, rotate: -1.5 }}
+      transition={{ duration: 0.16, ease: 'easeOut' }}
+      className={`relative flex items-center justify-center gap-7 px-10 py-3 rounded-2xl border-[5px] ${
+        over
+          ? 'border-alarm bg-ink/95 shadow-[0_0_55px_rgba(200,16,46,0.65)]'
+          : alarm
+            ? 'border-alarm bg-ink/95 shadow-[0_0_45px_rgba(200,16,46,0.5)]'
+            : 'border-gold bg-ink/95 shadow-[0_0_35px_rgba(201,162,39,0.35)]'
+      }`}
+      style={{
+        backgroundImage: 'radial-gradient(circle at 50% 50%, rgba(232,225,208,0.06) 0%, transparent 70%)',
+      }}
+    >
+      {/* Decorative mechanical clock dial SVG */}
+      <div className="relative flex items-center justify-center">
+        <svg viewBox="0 0 100 100" className={`h-20 w-20 ${alarm ? 'text-alarm animate-spin' : 'text-gold'}`} style={{ animationDuration: '3s' }}>
+          <circle cx="50" cy="50" r="44" fill="none" stroke="currentColor" strokeWidth="4" strokeDasharray="4 4" />
+          <circle cx="50" cy="50" r="36" fill="none" stroke="currentColor" strokeWidth="2" />
+          {Array.from({ length: 12 }, (_, i) => {
+            const rad = (i * 30 * Math.PI) / 180;
+            return (
+              <line
+                key={i}
+                x1={50 + Math.sin(rad) * 38}
+                y1={50 - Math.cos(rad) * 38}
+                x2={50 + Math.sin(rad) * 43}
+                y2={50 - Math.cos(rad) * 43}
+                stroke="currentColor"
+                strokeWidth={i % 3 === 0 ? '3' : '1.5'}
+              />
+            );
+          })}
+          {/* Clock ticking hand */}
+          <line
+            x1="50"
+            y1="50"
+            x2={50 + Math.sin((secs * 6 * Math.PI) / 180) * 30}
+            y2={50 - Math.cos((secs * 6 * Math.PI) / 180) * 30}
+            stroke={alarm ? '#C8102E' : '#E8E1D0'}
+            strokeWidth="3.5"
+            strokeLinecap="round"
+          />
+          <circle cx="50" cy="50" r="4" fill={alarm ? '#C8102E' : '#C9A227'} />
+        </svg>
+      </div>
+
+      {/* Main Countdown Display */}
+      {over ? (
+        <div className="flex flex-col items-center">
+          <span className="stamp text-alarm text-[58px] font-black tracking-widest uppercase">
+            VAULT LOCKED
+          </span>
+          <span className="label text-[15px] text-paper/70 tracking-widest">COUNTING THE LOOT</span>
+        </div>
+      ) : (
+        <div className="flex items-baseline gap-3">
+          <div className="flex flex-col items-start">
+            <span className="label text-[13px] text-gold tracking-[0.25em] font-bold">COUNTDOWN</span>
+            <span className={`display stencil text-[96px] leading-none tracking-wider ${alarm ? 'text-alarm' : 'text-gold'}`}>
+              {String(secs).padStart(2, '0')}
+            </span>
+          </div>
+          <span className={`label text-[22px] font-bold tracking-widest ${alarm ? 'text-alarm' : 'text-paper/80'}`}>
+            SECONDS
+          </span>
+        </div>
+      )}
+
+      {/* Stamp effect border badges */}
+      <div className="flex flex-col items-center pl-4 border-l-2 border-paper/20">
+        <span className={`font-mono font-bold text-[13px] uppercase px-2 py-0.5 border ${
+          alarm ? 'text-alarm border-alarm bg-alarm/10 animate-pulse' : 'text-gold border-gold/40 bg-gold/10'
+        }`}>
+          {alarm ? 'URGENT' : 'SECURE'}
+        </span>
+        <span className="label text-[11px] text-paper/60 mt-1">PLAN TIMER</span>
+      </div>
+    </m.div>
+  );
+}
+
 function SceneBody({ scene, state, snap, t, remaining, code, origin }: {
   scene: string; state: PublicState | null; snap: Snapshot | null; t: number; remaining: number; code: string; origin: string;
 }) {
@@ -231,30 +321,37 @@ function SceneBody({ scene, state, snap, t, remaining, code, origin }: {
     const q = state.q;
     const over = scene === 'timeup';
     return (
-      <div className="flex h-full flex-col p-12">
-        <div className="flex items-start justify-between gap-10">
-          <div className="min-w-0 flex-1">
+      <div className="flex h-full flex-col px-12 py-8">
+        {/* Top plan details bar with full width for question */}
+        <div>
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-5">
               <CaseLabel className="!text-[28px] text-gold">Plan {String(q.n).padStart(2, '0')} / {String(state.total).padStart(2, '0')}</CaseLabel>
-              <span className="label bg-paper px-3 py-1 text-[22px] text-ink">{q.difficulty}</span>
+              <span className="label bg-paper px-3 py-1 text-[22px] text-ink font-bold">{q.difficulty}</span>
               <span className="label text-[22px] text-paper/80">{state.answered} of {state.count} locked in</span>
             </div>
-            <h1 className="display mt-6 text-[78px] leading-[1.0]">{q.text}</h1>
+            <span className="label text-[18px] text-paper/70 font-mono tracking-wider">PROJECTOR BROADCAST</span>
           </div>
-          <div className="shrink-0">
-            {over ? <Stamp tone="red" className="bg-ink text-[120px]">Time</Stamp> : <HeistClock size="xl" ms={remaining} />}
-          </div>
+          <h1 className="display mt-4 text-[72px] leading-[1.05]">{q.text}</h1>
         </div>
-        <ThinBar className="!h-3 mt-6" pct={(remaining / (q.limit * 1000)) * 100} alarm={remaining > 0 && remaining <= 3000} />
-        <div className="mt-8 grid flex-1 grid-cols-2 gap-5">
+
+        <ThinBar className="!h-3 mt-4" pct={(remaining / (q.limit * 1000)) * 100} alarm={remaining > 0 && remaining <= 3000} />
+
+        {/* Center stamped animation clock in the exact middle */}
+        <div className="my-5 flex items-center justify-center">
+          <StampClock ms={remaining} over={over} />
+        </div>
+
+        {/* Options grid */}
+        <div className="grid flex-1 grid-cols-2 gap-5">
           {q.options.map((o, i) => (
-            <div key={i} className={`flex items-center gap-6 border-[4px] px-8 font-body text-[50px] font-bold leading-tight ${OPTION_STYLE[i]} ${over ? 'opacity-60' : ''}`}>
-              <ShapeIcon i={i} size={64} />
-              <span>{o}</span>
+            <div key={i} className={`flex items-center gap-6 border-[4px] px-8 py-4 font-body text-[46px] font-bold leading-tight ${OPTION_STYLE[i]} ${over ? 'opacity-60' : ''}`}>
+              <ShapeIcon i={i} size={58} />
+              <span className="break-words">{o}</span>
             </div>
           ))}
         </div>
-        {over && <p className="label mt-4 text-[26px] text-paper/80">Counting the loot...</p>}
+        {over && <p className="label mt-3 text-[26px] text-paper/80">Counting the loot...</p>}
       </div>
     );
   }
@@ -276,33 +373,51 @@ function RevealScene({ snap }: { snap: Snapshot }) {
     animate: { clipPath: 'inset(0 0% 0 0)' },
     transition: { delay: D(delay), duration: rm ? 0 : 0.6, ease: [0.7, 0, 0.2, 1] as [number, number, number, number] },
   });
+
+  const top = snap.cum.slice(0, 20);
+  const colLeft = top.slice(0, 10);
+  const colRight = top.slice(10, 20);
+
   return (
-    <div className="flex h-full flex-col px-12 py-8">
-      <div className="flex items-baseline gap-6">
-        <CaseLabel className="!text-[24px] text-gold">Plan {String(snap.q + 1).padStart(2, '0')} result</CaseLabel>
-        <p className="line-clamp-1 font-body text-[30px] font-semibold text-paper/85">{snap.text}</p>
+    <div className="flex h-full flex-col px-12 py-7">
+      <div className="flex items-baseline justify-between">
+        <div className="flex items-baseline gap-6">
+          <CaseLabel className="!text-[24px] text-gold">Plan {String(snap.q + 1).padStart(2, '0')} result</CaseLabel>
+          <p className="line-clamp-1 font-body text-[30px] font-semibold text-paper/85">{snap.text}</p>
+        </div>
+        <span className="label bg-red text-paper px-3 py-1 text-[16px] font-bold uppercase tracking-wider">
+          LIVE CUMULATIVE STANDINGS
+        </span>
       </div>
-      <div className="mt-5 grid flex-1 grid-cols-[680px_520px_520px] gap-8">
+
+      <div className="mt-4 grid flex-1 grid-cols-[740px_1fr] gap-8">
+        {/* Left Column: Distribution Graph & Correct Answer */}
         <m.section {...slide(0)} className="plate flex flex-col p-6 border-2 border-gold/40">
           <div className="flex items-center justify-between">
             <CaseLabel className="!text-[22px] text-gold">Real-Time Distribution Graph</CaseLabel>
             <span className="label text-[14px] text-gold font-bold bg-ink px-2 py-0.5 border border-gold/30">Crew Breakdown</span>
           </div>
-          <div className={`mt-3 flex items-center gap-4 border-[4px] px-5 py-4 font-body text-[38px] font-bold leading-tight ${OPTION_STYLE[snap.correct]}`}>
-            <ShapeIcon i={snap.correct} size={48} />
-            <span>{snap.options[snap.correct]}</span>
+          <div className={`mt-3 flex items-center gap-4 border-[4px] px-5 py-4 font-body text-[36px] font-bold leading-tight ${OPTION_STYLE[snap.correct]}`}>
+            <ShapeIcon i={snap.correct} size={44} />
+            <span className="truncate">{snap.options[snap.correct]}</span>
           </div>
-          <div className="mt-6 flex-1"><DistChart dist={snap.dist} correct={snap.correct} options={snap.options} big /></div>
-          <p className="mt-4 font-type text-[24px] leading-snug text-paper/90">{snap.fact}</p>
+          <div className="mt-5 flex-1"><DistChart dist={snap.dist} correct={snap.correct} options={snap.options} big /></div>
+          <p className="mt-4 font-type text-[23px] leading-snug text-paper/90">{snap.fact}</p>
         </m.section>
-        <m.section {...slide(2.2)} className="plate p-6">
-          <CaseLabel className="!text-[20px] text-gold">This plan / fastest hands</CaseLabel>
-          <Board rows={snap.perQ} mode="q" size="lg" delay={D(2.6)} empty="Nobody cracked this one. The Professor is not surprised." />
-        </m.section>
-        <m.section {...slide(4.6)} className="plate p-6">
-          <CaseLabel className="!text-[20px] text-gold">The board / Top 20 crew</CaseLabel>
-          <div className="h-[680px] overflow-y-auto pr-1">
-            <Board rows={snap.cum} mode="cum" size="lg" delay={D(5.0)} />
+
+        {/* Right Column: Full Stretched Cumulative Top 20 Crew Leaderboard */}
+        <m.section {...slide(1.8)} className="plate flex flex-col p-6 border-2 border-gold/40">
+          <div className="flex items-center justify-between pb-3 border-b border-gold/30">
+            <div className="flex items-center gap-3">
+              <CaseLabel className="!text-[22px] text-gold">Fastest Hands / Top 20 Cumulative Crew</CaseLabel>
+              <span className="label bg-gold text-ink font-bold px-2 py-0.5 text-[13px] uppercase">Official Top 20</span>
+            </div>
+            <span className="label text-[15px] text-paper/70 font-mono">Live Scores & Rank Changes</span>
+          </div>
+
+          <div className="mt-3 grid flex-1 grid-cols-2 gap-x-8">
+            <Board rows={colLeft} mode="cum" size="lg" delay={D(2.2)} empty="No scores yet." />
+            <Board rows={colRight} mode="cum" size="lg" delay={D(2.6)} empty="Awaiting more crew in ranks 11-20..." />
           </div>
         </m.section>
       </div>
@@ -340,33 +455,40 @@ function Podium({ row, place, h }: { row?: Row; place: number; h: number }) {
 
 function FinalScene({ snap }: { snap: Snapshot }) {
   const top = snap.cum;
-  const left = top.slice(0, 5);
-  const right = top.slice(5, 10);
+  const rest = top.slice(3, 20); // Ranks 4 to 20 without duplicating podium ranks 1-3
+  const left = rest.slice(0, 9); // Ranks 4 to 12
+  const right = rest.slice(9, 17); // Ranks 13 to 20
   return (
     <div className="relative flex h-full flex-col px-12 py-6">
       <Money count={26} />
       <div className="relative z-10 flex items-center justify-between">
-        <h1 className="display stencil text-[78px]">Gracias, crew. The heist is complete.</h1>
-        <Stamp tone="gold" className="bg-ink text-[40px]">Top 10 walk away with the gifts</Stamp>
+        <h1 className="display stencil text-[76px]">Gracias, crew. The heist is complete.</h1>
+        <Stamp tone="gold" className="bg-ink text-[34px]">Final Heist Standings (Top 20)</Stamp>
       </div>
-      <div className="relative z-10 mt-4 flex items-end justify-center gap-10">
-        <Podium row={top[1]} place={2} h={230} />
-        <Podium row={top[0]} place={1} h={300} />
-        <Podium row={top[2]} place={3} h={190} />
+      <div className="relative z-10 mt-3 flex items-end justify-center gap-10">
+        <Podium row={top[1]} place={2} h={220} />
+        <Podium row={top[0]} place={1} h={290} />
+        <Podium row={top[2]} place={3} h={180} />
       </div>
-      <div className="plate relative z-10 mt-5 grid grid-cols-2 gap-x-12 px-8 py-3">
-        {[left, right].map((col, c) => (
-          <ol key={c}>
-            {col.map((r) => (
-              <li key={r.id} className="flex items-center gap-4 border-b border-paper/15 py-1">
-                <span className="display num w-12 text-center text-[34px] text-gold">{r.rank}</span>
-                <Avatar id={r.a} size={42} />
-                <span className="min-w-0 flex-1 truncate font-type text-[32px]">{r.n}</span>
-                <span className="display num text-[32px] text-gold">{r.pts.toLocaleString('en-IN')}</span>
-              </li>
-            ))}
-          </ol>
-        ))}
+      <div className="plate relative z-10 mt-4 px-8 py-3">
+        <div className="flex items-center justify-between border-b border-gold/30 pb-2 mb-2">
+          <CaseLabel className="!text-[22px] text-gold">Crew Standings / Ranks 4 to 20</CaseLabel>
+          <span className="label text-[15px] text-paper/70 font-mono">Official Final Scores</span>
+        </div>
+        <div className="grid grid-cols-2 gap-x-12">
+          {[left, right].map((col, c) => (
+            <ol key={c}>
+              {col.map((r) => (
+                <li key={r.id} className="flex items-center gap-4 border-b border-paper/15 py-1">
+                  <span className="display num w-12 text-center text-[34px] text-gold">#{r.rank}</span>
+                  <Avatar id={r.a} size={42} />
+                  <span className="min-w-0 flex-1 truncate font-type text-[30px] font-semibold text-paper">{r.n}</span>
+                  <span className="display num text-[32px] text-gold">{r.pts.toLocaleString('en-IN')}</span>
+                </li>
+              ))}
+            </ol>
+          ))}
+        </div>
       </div>
     </div>
   );

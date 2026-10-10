@@ -126,7 +126,8 @@ function parsePlayer(raw: string | null | undefined, rankIndex: number): { n: st
   try {
     const p = JSON.parse(raw || '{}') as { n?: string; a?: number; ph?: string };
     const charTitle = HEIST_CHARACTERS[rankIndex] || `Operative ${rankIndex + 1}`;
-    const displayName = p.n ? (rankIndex === 0 ? `${p.n} [The Professor]` : p.n) : charTitle;
+    // Use the actual real name entered during registration; only fallback to character title if blank
+    const displayName = p.n && p.n.trim() ? p.n.trim() : charTitle;
     const avatar = typeof p.a === 'number' ? p.a : (rankIndex === 0 ? 0 : rankIndex % AVATAR_COUNT);
     return {
       n: displayName,
