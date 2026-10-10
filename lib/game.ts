@@ -95,12 +95,21 @@ export function toPublic(s: RawState, n: number, a: number, now: number): Public
   return base;
 }
 
-function parsePlayer(raw: string | null | undefined, rankIndex: number): { n: string; a: number; ph?: string } {
+function parsePlayer(raw: unknown, rankIndex: number): { n: string; a: number; ph?: string } {
   try {
-    const p = JSON.parse(raw || '{}') as { n?: string; a?: number; ph?: string };
+    let p: { n?: string; a?: number; ph?: string } = {};
+    if (typeof raw === 'string') {
+      try {
+        p = JSON.parse(raw);
+      } catch {
+        p = { n: raw };
+      }
+    } else if (raw && typeof raw === 'object') {
+      p = raw as { n?: string; a?: number; ph?: string };
+    }
     const defaultName = `Participant #${rankIndex + 1}`;
     // Always use the real name entered during registration; never substitute movie character names
-    const displayName = p.n && p.n.trim() ? p.n.trim() : defaultName;
+    const displayName = (p.n && typeof p.n === 'string' && p.n.trim()) ? p.n.trim() : defaultName;
     const avatar = typeof p.a === 'number' ? p.a : (rankIndex % AVATAR_COUNT);
     return {
       n: displayName,
@@ -112,7 +121,7 @@ function parsePlayer(raw: string | null | undefined, rankIndex: number): { n: st
   }
 }
 
-function toRows(flat: unknown[], names: Record<string, string | null>, prev?: Map<string, number>): Row[] {
+function toRows(flat: unknown[], names: Record<string, unknown>, prev?: Map<string, number>): Row[] {
   const out: Row[] = [];
 
   for (let i = 0; i + 1 < flat.length; i += 2) {
@@ -144,27 +153,41 @@ async function buildSnapshot(s: RawState) {
   p.zrange(K.zq(q), 0, TOP_N - 1, { rev: true, withScores: true });
   p.zrange(K.cum, 0, TOP_N - 1, { rev: true, withScores: true });
   p.hgetall(K.dist(q));
-  p.hlen(K.ans(q));
+  p.hgetall(K.ans(q));
   p.hlen(K.players);
   p.get(K.snap(q - 1));
-
-  // Also pipeline fetch all questions distribution history up to current question
-  for (let idx = 0; idx <= q; idx++) {
-    p.hgetall(K.dist(idx));
-    p.hlen(K.ans(idx));
-  }
 
   const results = await p.exec();
   const pq = results[0] as unknown[];
   const cu = results[1] as unknown[];
   const dist = results[2] as Record<string, string> | null;
-  const ans = results[3] as number;
+  const rawAnswers = (results[3] as Record<string, string>) || {};
   const crew = results[4] as number;
   const prevRaw = results[5] as string | null;
 
   const ids = new Set<string>();
   for (const arr of [pq, cu]) for (let i = 0; i < arr.length; i += 2) ids.add(String(arr[i]));
-  const names = ids.size ? ((await r.hmget<Record<string, string>>(K.players, ...Array.from(ids))) ?? {}) : {};
+  const idList = Array.from(ids);
+  const names: Record<string, unknown> = {};
+  if (idList.length) {
+    const rawVals = ((await r.hmget(K.players, ...idList)) as unknown) ?? [];
+    if (Array.isArray(rawVals)) {
+      idList.forEach((id, i) => {
+        names[id] = rawVals[i] ?? null;
+      });
+    } else if (rawVals && typeof rawVals === 'object') {
+      Object.assign(names, rawVals);
+    }
+  }
+
+  // Fallback to fetch from K.players if any ID is still missing
+  const missingIds = idList.filter((id) => !names[id]);
+  if (missingIds.length > 0) {
+    const allP = (await r.hgetall<Record<string, unknown>>(K.players)) ?? {};
+    for (const mid of missingIds) {
+      if (allP[mid]) names[mid] = allP[mid];
+    }
+  }
 
   let prevMap: Map<string, number> | undefined;
   if (q > 0 && prevRaw) {
@@ -174,33 +197,25 @@ async function buildSnapshot(s: RawState) {
     } catch { /* ignore */ }
   }
 
-  const history: Array<{
-    q: number;
-    text: string;
-    options: string[];
-    correct: number;
-    dist: number[];
-    answered: number;
-  }> = [];
-
-  const extraResults = results.slice(6);
-  for (let idx = 0; idx <= q; idx++) {
-    const qMeta = questionMeta(idx, s.seed);
-    const dMap = extraResults[idx * 2] as Record<string, string> | null;
-    const distArr = [0, 1, 2, 3].map((k) => num(dMap?.[String(k)]));
-    const totalVotes = distArr.reduce((a, b) => a + b, 0);
-    history.push({
-      q: idx,
-      text: qMeta.text,
-      options: qMeta.options,
-      correct: qMeta.correct,
-      dist: distArr,
-      answered: totalVotes,
-    });
+  // Derive distribution strictly from genuine submitted answers in a:q
+  const currentDist = [0, 0, 0, 0];
+  let currentVotes = 0;
+  for (const val of Object.values(rawAnswers)) {
+    if (!val) continue;
+    const choice = Number(String(val).split('|')[0]);
+    if (choice >= 0 && choice <= 3) {
+      currentDist[choice]++;
+      currentVotes++;
+    }
   }
 
-  const currentDist = [0, 1, 2, 3].map((i) => num(dist?.[String(i)]));
-  const currentVotes = currentDist.reduce((a, b) => a + b, 0);
+  // Fallback to dist hash if a:q is empty (e.g. manual testing)
+  if (currentVotes === 0 && dist) {
+    for (let i = 0; i < 4; i++) {
+      currentDist[i] = num(dist[String(i)]);
+    }
+    currentVotes = currentDist.reduce((a, b) => a + b, 0);
+  }
 
   const snap: Snapshot = {
     q, text: m.text, options: m.options, correct: m.correct, fact: m.fact,
@@ -209,7 +224,6 @@ async function buildSnapshot(s: RawState) {
     perQ: toRows(pq, names),
     cum: toRows(cu, names, prevMap),
     last: q >= QUESTIONS.length - 1,
-    history,
   };
   await r.set(K.snap(q), JSON.stringify(snap), { ex: 3 * 24 * 3600 });
 }
