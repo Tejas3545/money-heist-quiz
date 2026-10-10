@@ -10,19 +10,17 @@ export function AdscStamp({ size = 36, big = false }: { size?: number; big?: boo
   return (
     <div
       className={`inline-flex shrink-0 items-center border border-gold/80 sm:border-2 sm:border-gold bg-ink/95 rounded shadow-sm ${
-        big ? 'gap-3 px-3.5 py-2' : 'gap-1 sm:gap-1.5 px-1.5 py-1 sm:px-2 sm:py-1'
+        big ? 'gap-2.5 px-3 py-1.5' : 'gap-1.5 px-2 py-1 sm:px-2.5 sm:py-1'
       }`}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src="/brand/adsc-logo.png"
         alt="ADSC logo"
-        className={`block shrink-0 object-contain ${big ? 'h-16 w-16' : 'h-7 w-7 sm:h-9 sm:w-9'}`}
+        className={`block shrink-0 object-contain ${big ? 'h-14 w-14' : 'h-7 w-7 sm:h-8 sm:w-8'}`}
       />
-      <span className={`label leading-none text-gold font-bold ${big ? 'text-[22px]' : 'text-[9px] sm:text-[11px]'}`}>
+      <span className={`label leading-none text-gold font-bold ${big ? 'text-[22px]' : 'text-[12px] sm:text-[14px]'}`}>
         ADSC
-        <br />
-        CREW
       </span>
     </div>
   );
