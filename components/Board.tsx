@@ -36,7 +36,7 @@ export function Board({ rows, mode, size = 'sm', meId, delay = 0, empty = 'Nobod
 }) {
   const [inspected, setInspected] = useState<Row | null>(null);
   const big = size === 'lg';
-  const H = big ? 66 : 54;
+  const H = big ? 60 : 48;
   if (!rows.length) return <p className="label p-4 text-[12px] text-paper/80">{empty}</p>;
   return (
     <>

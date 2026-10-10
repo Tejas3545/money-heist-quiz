@@ -133,3 +133,20 @@ body::after {
 @keyframes scan { 0% { transform: translateX(-100%); } 100% { transform: translateX(400%); } }
 @keyframes fall { 0% { transform: translate3d(0,-20vh,0) rotate(var(--r0)); } 100% { transform: translate3d(var(--dx),120vh,0) rotate(var(--r1)); } }
 @keyframes stampdown { 0% { transform: scale(2.4) rotate(-8deg); opacity: 0; } 60% { transform: scale(1) rotate(-4deg); opacity: 1; } 100% { transform: scale(1) rotate(-4deg); opacity: 1; } }
+
+/* Custom heist scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(11, 11, 12, 0.6);
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #C9A227;
+  border-radius: 4px;
+}
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #C9A227 rgba(11, 11, 12, 0.6);
+}

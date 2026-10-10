@@ -151,19 +151,19 @@ export default function ScreenApp() {
 
   return (
     <Stage>
-      <div className="relative flex h-full w-full flex-col bg-ink">
+      <div className="relative flex h-full w-full flex-col bg-ink overflow-hidden">
         {/* top letterbox bar with large readable framed logos */}
-        <div className="flex h-[114px] shrink-0 items-center justify-between bg-ink px-8 border-b-2 border-gold/40 shadow-lg">
+        <div className="flex h-[96px] shrink-0 items-center justify-between bg-ink px-8 border-b-2 border-gold/40 shadow-lg">
           <AtmiyaLogo big />
 
           <div className="flex items-center justify-center gap-6">
-            <p className="label text-[28px] text-paper font-bold tracking-[0.25em]">OPERATION CODE CARNIVAL / HEIST DAY</p>
+            <p className="label text-[26px] text-paper font-bold tracking-[0.25em]">OPERATION CODE CARNIVAL / HEIST DAY</p>
             <SoundButton size="lg" />
           </div>
 
           <AdscStamp big />
         </div>
-        <Tape />
+        <Tape className="!h-2 shrink-0" />
 
         <div className="spill scanlines relative min-h-0 flex-1 overflow-hidden">
           <Scenes k={scene === 'pre' || scene === 'timeup' ? 'q' : scene}>
@@ -176,9 +176,9 @@ export default function ScreenApp() {
           )}
         </div>
 
-        <Tape />
-        <div className="flex h-[60px] shrink-0 items-center justify-center bg-ink">
-          <p className="label text-[22px] text-paper/80">Atmiya Developer Students Club</p>
+        <Tape className="!h-2 shrink-0" />
+        <div className="flex h-[46px] shrink-0 items-center justify-center bg-ink">
+          <p className="label text-[20px] text-paper/80">Atmiya Developer Students Club</p>
         </div>
         {offline && <div className="absolute inset-x-0 top-0 z-50"><ReconnectBanner show /></div>}
       </div>
@@ -376,34 +376,37 @@ function RevealScene({ snap }: { snap: Snapshot }) {
   });
 
   return (
-    <div className="flex h-full flex-col px-12 py-7">
-      <div className="flex items-baseline justify-between">
-        <div className="flex items-baseline gap-6">
-          <CaseLabel className="!text-[24px] text-gold">Plan {String(snap.q + 1).padStart(2, '0')} result</CaseLabel>
-          <p className="line-clamp-1 font-body text-[30px] font-semibold text-paper/85">{snap.text}</p>
+    <div className="flex h-full flex-col px-8 pt-3 pb-3 justify-between overflow-hidden">
+      {/* Top result summary bar */}
+      <div className="flex items-center justify-between pb-1 shrink-0">
+        <div className="flex items-center gap-4 min-w-0 flex-1 mr-4">
+          <span className="label bg-gold text-ink font-bold px-3 py-1 text-[16px] uppercase tracking-wider shrink-0">
+            PLAN {String(snap.q + 1).padStart(2, '0')} RESULT
+          </span>
+          <p className="line-clamp-1 font-body text-[26px] font-semibold text-paper/90 truncate">{snap.text}</p>
         </div>
-        <span className="label bg-red text-paper px-3 py-1 text-[16px] font-bold uppercase tracking-wider">
+        <span className="label bg-red text-paper px-3 py-1 text-[14px] font-bold uppercase tracking-wider shrink-0">
           LIVE CUMULATIVE STANDINGS
         </span>
       </div>
 
-      <div className="mt-4 grid flex-1 grid-cols-[760px_1fr] gap-8">
+      <div className="mt-2 grid flex-1 grid-cols-[820px_1fr] gap-6 min-h-0">
         {/* Left Column: Comprehensive MCQ Analytics & Distribution Graph */}
-        <m.section {...slide(0)} className="plate flex flex-col p-6 border-2 border-gold/40">
+        <m.section {...slide(0)} className="plate flex flex-col p-4 border-2 border-gold/40 h-full overflow-hidden justify-between">
           <McqAnalyticsGraph snap={snap} />
         </m.section>
 
         {/* Right Column: Full Single-Column List View Top 20 Crew Leaderboard */}
-        <m.section {...slide(1.8)} className="plate flex flex-col p-6 border-2 border-gold/40">
-          <div className="flex items-center justify-between pb-3 border-b border-gold/30">
+        <m.section {...slide(1.8)} className="plate flex flex-col p-4 border-2 border-gold/40 h-full overflow-hidden justify-between">
+          <div className="flex items-center justify-between pb-2 border-b border-gold/30 shrink-0">
             <div className="flex items-center gap-3">
-              <CaseLabel className="!text-[22px] text-gold">Fastest Hands / Top 20 Cumulative Crew</CaseLabel>
-              <span className="label bg-gold text-ink font-bold px-2 py-0.5 text-[13px] uppercase">Official Leaderboard</span>
+              <CaseLabel className="!text-[20px] text-gold">Fastest Hands / Top 20 Cumulative Crew</CaseLabel>
+              <span className="label bg-gold text-ink font-bold px-2 py-0.5 text-[12px] uppercase">Official Leaderboard</span>
             </div>
-            <span className="label text-[15px] text-paper/70 font-mono">Live Scores & Rank Shifts</span>
+            <span className="label text-[13px] text-paper/70 font-mono">Live Scores</span>
           </div>
 
-          <div className="mt-3 flex-1 overflow-y-auto pr-2 max-h-[700px]">
+          <div className="mt-2 flex-1 overflow-y-auto pr-2 custom-scrollbar">
             <Board
               rows={snap.cum.slice(0, 20)}
               mode="cum"
