@@ -95,58 +95,28 @@ export function toPublic(s: RawState, n: number, a: number, now: number): Public
   return base;
 }
 
-const HEIST_CHARACTERS = [
-  'The Professor',
-  'Tokyo',
-  'Berlin',
-  'Nairobi',
-  'Rio',
-  'Denver',
-  'Helsinki',
-  'Oslo',
-  'Moscow',
-  'Lisbon',
-  'Stockholm',
-  'Bogotá',
-  'Palermo',
-  'Marseille',
-  'Manila',
-  'Alicia Sierra',
-  'Arturo Román',
-  'Colonel Tamayo',
-  'Tatiana',
-  'César Gandía',
-  'Dalí Mask (Classic)',
-  'Hooded Dalí Mask',
-  'Royal Mint Gold Mask',
-  'Shadow Dalí Mask',
-];
-
 function parsePlayer(raw: string | null | undefined, rankIndex: number): { n: string; a: number; ph?: string } {
   try {
     const p = JSON.parse(raw || '{}') as { n?: string; a?: number; ph?: string };
-    const charTitle = HEIST_CHARACTERS[rankIndex] || `Operative ${rankIndex + 1}`;
-    // Use the actual real name entered during registration; only fallback to character title if blank
-    const displayName = p.n && p.n.trim() ? p.n.trim() : charTitle;
-    const avatar = typeof p.a === 'number' ? p.a : (rankIndex === 0 ? 0 : rankIndex % AVATAR_COUNT);
+    const defaultName = `Participant #${rankIndex + 1}`;
+    // Always use the real name entered during registration; never substitute movie character names
+    const displayName = p.n && p.n.trim() ? p.n.trim() : defaultName;
+    const avatar = typeof p.a === 'number' ? p.a : (rankIndex % AVATAR_COUNT);
     return {
       n: displayName,
       a: avatar,
       ph: p.ph,
     };
   } catch {
-    const charTitle = HEIST_CHARACTERS[rankIndex] || `Operative ${rankIndex + 1}`;
-    return { n: charTitle, a: rankIndex % AVATAR_COUNT };
+    return { n: `Participant #${rankIndex + 1}`, a: rankIndex % AVATAR_COUNT };
   }
 }
 
 function toRows(flat: unknown[], names: Record<string, string | null>, prev?: Map<string, number>): Row[] {
   const out: Row[] = [];
-  const seenIds = new Set<string>();
 
   for (let i = 0; i + 1 < flat.length; i += 2) {
     const id = String(flat[i]);
-    seenIds.add(id);
     const rankIndex = i / 2;
     const p = parsePlayer(names[id], rankIndex);
     const row: Row = {
@@ -161,19 +131,7 @@ function toRows(flat: unknown[], names: Record<string, string | null>, prev?: Ma
     out.push(row);
   }
 
-  // Populate remaining ranks up to TOP_N (20) with Money Heist cast so the full crew is always visible
-  for (let rankIndex = out.length; rankIndex < TOP_N; rankIndex++) {
-    const charName = HEIST_CHARACTERS[rankIndex] || `Operative ${rankIndex + 1}`;
-    out.push({
-      id: `cast-${rankIndex}`,
-      n: charName,
-      a: rankIndex % AVATAR_COUNT,
-      pts: 0,
-      rank: rankIndex + 1,
-      prev: null,
-    });
-  }
-
+  // Only return real participants who joined; no dummy cast bot injection
   return out;
 }
 
@@ -189,7 +147,20 @@ async function buildSnapshot(s: RawState) {
   p.hlen(K.ans(q));
   p.hlen(K.players);
   p.get(K.snap(q - 1));
-  const [pq, cu, dist, ans, crew, prevRaw] = (await p.exec()) as [unknown[], unknown[], Record<string, string> | null, number, number, string | null];
+
+  // Also pipeline fetch all questions distribution history up to current question
+  for (let idx = 0; idx <= q; idx++) {
+    p.hgetall(K.dist(idx));
+    p.hlen(K.ans(idx));
+  }
+
+  const results = await p.exec();
+  const pq = results[0] as unknown[];
+  const cu = results[1] as unknown[];
+  const dist = results[2] as Record<string, string> | null;
+  const ans = results[3] as number;
+  const crew = results[4] as number;
+  const prevRaw = results[5] as string | null;
 
   const ids = new Set<string>();
   for (const arr of [pq, cu]) for (let i = 0; i < arr.length; i += 2) ids.add(String(arr[i]));
@@ -203,6 +174,31 @@ async function buildSnapshot(s: RawState) {
     } catch { /* ignore */ }
   }
 
+  const history: Array<{
+    q: number;
+    text: string;
+    options: string[];
+    correct: number;
+    dist: number[];
+    answered: number;
+  }> = [];
+
+  const extraResults = results.slice(6);
+  for (let idx = 0; idx <= q; idx++) {
+    const qMeta = questionMeta(idx, s.seed);
+    const dMap = extraResults[idx * 2] as Record<string, string> | null;
+    const ansCount = Number(extraResults[idx * 2 + 1]) || 0;
+    const distArr = [0, 1, 2, 3].map((k) => num(dMap?.[String(k)]));
+    history.push({
+      q: idx,
+      text: qMeta.text,
+      options: qMeta.options,
+      correct: qMeta.correct,
+      dist: distArr,
+      answered: ansCount,
+    });
+  }
+
   const snap: Snapshot = {
     q, text: m.text, options: m.options, correct: m.correct, fact: m.fact,
     dist: [0, 1, 2, 3].map((i) => num(dist?.[String(i)])),
@@ -210,6 +206,7 @@ async function buildSnapshot(s: RawState) {
     perQ: toRows(pq, names),
     cum: toRows(cu, names, prevMap),
     last: q >= QUESTIONS.length - 1,
+    history,
   };
   await r.set(K.snap(q), JSON.stringify(snap), { ex: 3 * 24 * 3600 });
 }

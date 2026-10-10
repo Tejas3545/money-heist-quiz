@@ -48,6 +48,14 @@ export interface Snapshot {
   perQ: Row[];
   cum: Row[];
   last: boolean;
+  history?: Array<{
+    q: number;
+    text: string;
+    options: string[];
+    correct: number;
+    dist: number[];
+    answered: number;
+  }>;
 }
 
 export interface MeResult {

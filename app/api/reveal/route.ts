@@ -4,14 +4,23 @@ import { finalizeIfDue, getState } from '@/lib/game';
 
 export const dynamic = 'force-dynamic';
 
+const memSnapCache = new Map<number, { raw: string; time: number }>();
+
 /**
- * Cached reveal snapshot (correct answer, distribution, top 10 per question, top 10 overall).
- * Built once per question under a lock. Ready responses are CDN cached; "not ready" for 1 s.
- * The `e` (epoch) query parameter is only a cache key so a reset never serves an old game.
+ * Cached reveal snapshot (correct answer, distribution, top 20, MCQ history).
+ * Built once per question under a lock. Ready responses are memory cached & CDN cached.
  */
 export async function GET(req: NextRequest) {
   const q = Number(req.nextUrl.searchParams.get('q'));
   if (!Number.isInteger(q) || q < 0 || q > 99) return new Response(null, { status: 400 });
+
+  const now = Date.now();
+  const cached = memSnapCache.get(q);
+  if (cached && now - cached.time < 30000) {
+    return new Response(`{"ready":true,"snapshot":${cached.raw}}`, {
+      headers: { 'content-type': 'application/json', 'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=60', 'X-Snap-Cache': 'RAM' },
+    });
+  }
 
   let raw = await redis().get<string>(K.snap(q));
   if (!raw) {
@@ -22,7 +31,10 @@ export async function GET(req: NextRequest) {
   if (!raw) {
     return NextResponse.json({ ready: false }, { headers: { 'Cache-Control': 'public, s-maxage=1, stale-while-revalidate=1' } });
   }
+
+  memSnapCache.set(q, { raw, time: now });
+
   return new Response(`{"ready":true,"snapshot":${raw}}`, {
-    headers: { 'content-type': 'application/json', 'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=60' },
+    headers: { 'content-type': 'application/json', 'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=60', 'X-Snap-Cache': 'REDIS' },
   });
 }

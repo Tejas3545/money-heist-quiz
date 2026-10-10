@@ -5,6 +5,7 @@ import { useReducedMotion } from 'framer-motion';
 import { Avatar } from '../avatars';
 import { Board } from '../Board';
 import { DistChart } from '../DistChart';
+import { McqAnalyticsGraph } from '../McqAnalyticsGraph';
 import { AdscStamp, AtmiyaLogo, CaseLabel, HeistClock, OPTION_STYLE, ReconnectBanner, RollNumber, ShapeIcon, SoundButton, Stamp, Tape, ThinBar, TitleLockup, VolumeIcon, m } from '../ui';
 import { useGame, useNow, useReveal } from '@/lib/useGame';
 import type { PublicState, Row, Snapshot } from '@/lib/types';
@@ -374,10 +375,6 @@ function RevealScene({ snap }: { snap: Snapshot }) {
     transition: { delay: D(delay), duration: rm ? 0 : 0.6, ease: [0.7, 0, 0.2, 1] as [number, number, number, number] },
   });
 
-  const top = snap.cum.slice(0, 20);
-  const colLeft = top.slice(0, 10);
-  const colRight = top.slice(10, 20);
-
   return (
     <div className="flex h-full flex-col px-12 py-7">
       <div className="flex items-baseline justify-between">
@@ -390,34 +387,30 @@ function RevealScene({ snap }: { snap: Snapshot }) {
         </span>
       </div>
 
-      <div className="mt-4 grid flex-1 grid-cols-[740px_1fr] gap-8">
-        {/* Left Column: Distribution Graph & Correct Answer */}
+      <div className="mt-4 grid flex-1 grid-cols-[760px_1fr] gap-8">
+        {/* Left Column: Comprehensive MCQ Analytics & Distribution Graph */}
         <m.section {...slide(0)} className="plate flex flex-col p-6 border-2 border-gold/40">
-          <div className="flex items-center justify-between">
-            <CaseLabel className="!text-[22px] text-gold">Real-Time Distribution Graph</CaseLabel>
-            <span className="label text-[14px] text-gold font-bold bg-ink px-2 py-0.5 border border-gold/30">Crew Breakdown</span>
-          </div>
-          <div className={`mt-3 flex items-center gap-4 border-[4px] px-5 py-4 font-body text-[36px] font-bold leading-tight ${OPTION_STYLE[snap.correct]}`}>
-            <ShapeIcon i={snap.correct} size={44} />
-            <span className="truncate">{snap.options[snap.correct]}</span>
-          </div>
-          <div className="mt-5 flex-1"><DistChart dist={snap.dist} correct={snap.correct} options={snap.options} big /></div>
-          <p className="mt-4 font-type text-[23px] leading-snug text-paper/90">{snap.fact}</p>
+          <McqAnalyticsGraph snap={snap} />
         </m.section>
 
-        {/* Right Column: Full Stretched Cumulative Top 20 Crew Leaderboard */}
+        {/* Right Column: Full Single-Column List View Top 20 Crew Leaderboard */}
         <m.section {...slide(1.8)} className="plate flex flex-col p-6 border-2 border-gold/40">
           <div className="flex items-center justify-between pb-3 border-b border-gold/30">
             <div className="flex items-center gap-3">
               <CaseLabel className="!text-[22px] text-gold">Fastest Hands / Top 20 Cumulative Crew</CaseLabel>
-              <span className="label bg-gold text-ink font-bold px-2 py-0.5 text-[13px] uppercase">Official Top 20</span>
+              <span className="label bg-gold text-ink font-bold px-2 py-0.5 text-[13px] uppercase">Official Leaderboard</span>
             </div>
-            <span className="label text-[15px] text-paper/70 font-mono">Live Scores & Rank Changes</span>
+            <span className="label text-[15px] text-paper/70 font-mono">Live Scores & Rank Shifts</span>
           </div>
 
-          <div className="mt-3 grid flex-1 grid-cols-2 gap-x-8">
-            <Board rows={colLeft} mode="cum" size="lg" delay={D(2.2)} empty="No scores yet." />
-            <Board rows={colRight} mode="cum" size="lg" delay={D(2.6)} empty="Awaiting more crew in ranks 11-20..." />
+          <div className="mt-3 flex-1 overflow-y-auto pr-2 max-h-[700px]">
+            <Board
+              rows={snap.cum.slice(0, 20)}
+              mode="cum"
+              size="lg"
+              delay={D(2.2)}
+              empty="No crew scores yet. Waiting for participants to lock in."
+            />
           </div>
         </m.section>
       </div>

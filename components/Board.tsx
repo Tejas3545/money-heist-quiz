@@ -63,7 +63,7 @@ export function Board({ rows, mode, size = 'sm', meId, delay = 0, empty = 'Nobod
               title="Click to view participant dossier"
             >
               <span className={`display num w-9 text-center text-gold font-bold ${big ? 'text-[38px]' : 'text-[24px]'}`}>{r.rank}</span>
-              <span className={`relative z-10 h-3.5 w-3.5 shrink-0 rounded-full border-2 border-ink ring-1 ring-paper/60 ${isProfessor ? 'bg-gold ring-gold' : 'bg-red'}`} />
+              <span className={`relative z-10 h-4 w-4 shrink-0 rounded-full border-2 border-ink ring-2 ${isProfessor ? 'bg-gold ring-gold shadow-[0_0_12px_#C9A227]' : 'bg-red ring-paper/60'}`} />
               {i < rows.length - 1 && (
                 <m.span
                   aria-hidden="true"
@@ -75,9 +75,9 @@ export function Board({ rows, mode, size = 'sm', meId, delay = 0, empty = 'Nobod
                 />
               )}
               <Avatar id={avatarId} size={big ? 50 : 38} />
-              <div className="min-w-0 flex-1 truncate">
-                <span className={`font-body font-semibold ${big ? 'text-[30px]' : 'text-[17px]'}`}>{r.n}</span>
-                {isProfessor && <span className="ml-1.5 label text-[10px] text-gold bg-ink px-1 border border-gold/50">LEADER</span>}
+              <div className="min-w-0 flex-1 truncate flex items-center">
+                <span className={`font-body font-semibold truncate ${big ? 'text-[30px]' : 'text-[17px]'}`}>{r.n}</span>
+                {isProfessor && <span className="ml-2.5 label text-[12px] text-ink bg-gold px-2 py-0.5 font-bold uppercase rounded tracking-wider shadow shrink-0">👑 THE PROFESSOR</span>}
               </div>
               <span className={`display num text-gold ${big ? 'text-[36px]' : 'text-[22px]'}`}>
                 <RollNumber value={r.pts} />

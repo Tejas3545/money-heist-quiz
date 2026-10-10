@@ -148,12 +148,12 @@ export default function JoinFlow({ onJoined, notice }: { onJoined: (s: Session) 
                   <DossierGraphic height={75} />
                 </div>
 
-                <h1 className="display mb-0.5 text-[30px] xs:text-[36px]">Your cover story</h1>
+                <h1 className="display mb-0.5 text-[30px] xs:text-[36px]">Participant Registration</h1>
                 <p className="mb-2 font-body text-[14px] xs:text-[16px] text-paper/85 leading-snug">
-                  A codename for the leaderboard and mobile number for gift handover.
+                  Enter your real name for the live leaderboard and mobile number for prize handover.
                 </p>
                 <label htmlFor="name" className="label mb-1 block text-[11px] xs:text-[12px] text-gold">
-                  Codename ({NAME_MIN} to {NAME_MAX} characters)
+                  Your Full Name (Shown on Leaderboard)
                 </label>
                 <input
                   id="name"
@@ -161,8 +161,8 @@ export default function JoinFlow({ onJoined, notice }: { onJoined: (s: Session) 
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   maxLength={NAME_MAX + 6}
-                  autoComplete="nickname"
-                  placeholder="e.g. TOKYO / BERLIN"
+                  autoComplete="name"
+                  placeholder="e.g. Rahul Sharma"
                 />
                 <label htmlFor="phone" className="label mb-1 mt-2.5 block text-[11px] xs:text-[12px] text-gold">Mobile number</label>
                 <div className="flex">
@@ -206,20 +206,20 @@ export default function JoinFlow({ onJoined, notice }: { onJoined: (s: Session) 
                   <Avatar id={avatar} size={54} />
                   <div className="text-left min-w-0 flex-1">
                     <span className="label text-[9px] xs:text-[10px] text-gold uppercase tracking-wider font-bold block">
-                      Selected Operative:
+                      Selected Avatar Icon:
                     </span>
                     <p className="display text-[22px] xs:text-[26px] text-paper leading-tight truncate">
                       {getAvatarMeta(avatar).name}
                     </p>
                     <p className="label text-[10px] xs:text-[11px] text-gold/90 truncate">
-                      {getAvatarMeta(avatar).role}
+                      Leaderboard Name: <strong className="text-paper">{name || 'Your Name'}</strong>
                     </p>
                   </div>
                 </div>
 
-                <h1 className="display mb-0.5 text-[28px] xs:text-[32px]">Pick your character</h1>
+                <h1 className="display mb-0.5 text-[28px] xs:text-[32px]">Select Your Mask / Avatar Icon</h1>
                 <p className="mb-1.5 font-body text-[13px] xs:text-[15px] text-paper/85 leading-snug">
-                  Choose your Money Heist movie character for the live leaderboard:
+                  Your name <strong className="text-gold">{name || 'Your Name'}</strong> will appear on the leaderboard with this avatar:
                 </p>
                 <div role="radiogroup" aria-label="Avatar" className="grid grid-cols-4 gap-1.5 xs:gap-2 max-h-[175px] xs:max-h-[210px] overflow-y-auto pr-1">
                   {Array.from({ length: AVATAR_COUNT }, (_, i) => {
