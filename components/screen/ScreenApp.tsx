@@ -396,11 +396,11 @@ function RevealScene({ snap }: { snap: Snapshot }) {
           <McqAnalyticsGraph snap={snap} />
         </m.section>
 
-        {/* Right Column: Full Single-Column List View Top 20 Crew Leaderboard */}
+        {/* Right Column: Full Single-Column List View Top 10 Crew Leaderboard */}
         <m.section {...slide(1.8)} className="plate flex flex-col p-4 border-2 border-gold/40 h-full overflow-hidden justify-between">
           <div className="flex items-center justify-between pb-2 border-b border-gold/30 shrink-0">
             <div className="flex items-center gap-3">
-              <CaseLabel className="!text-[20px] text-gold">Fastest Hands / Top 20 Cumulative Crew</CaseLabel>
+              <CaseLabel className="!text-[20px] text-gold">Fastest Hands / Top 10 Cumulative Crew</CaseLabel>
               <span className="label bg-gold text-ink font-bold px-2 py-0.5 text-[12px] uppercase">Official Leaderboard</span>
             </div>
             <span className="label text-[13px] text-paper/70 font-mono">Live Scores</span>
@@ -408,7 +408,7 @@ function RevealScene({ snap }: { snap: Snapshot }) {
 
           <div className="mt-2 flex-1 overflow-y-auto pr-2 custom-scrollbar">
             <Board
-              rows={snap.cum.slice(0, 20)}
+              rows={snap.cum.slice(0, 10)}
               mode="cum"
               size="lg"
               delay={D(2.2)}
@@ -451,41 +451,43 @@ function Podium({ row, place, h }: { row?: Row; place: number; h: number }) {
 
 function FinalScene({ snap }: { snap: Snapshot }) {
   const top = snap.cum;
-  const rest = top.slice(3, 20); // Ranks 4 to 20 without duplicating podium ranks 1-3
-  const left = rest.slice(0, 9); // Ranks 4 to 12
-  const right = rest.slice(9, 17); // Ranks 13 to 20
+  const rest = top.slice(3, 10); // Strictly Ranks 4 to 10 for Top 10 Winners
+  const left = rest.slice(0, 4); // Ranks 4 to 7
+  const right = rest.slice(4, 7); // Ranks 8 to 10
   return (
     <div className="relative flex h-full flex-col px-12 py-6">
       <Money count={26} />
       <div className="relative z-10 flex items-center justify-between">
         <h1 className="display stencil text-[76px]">Gracias, crew. The heist is complete.</h1>
-        <Stamp tone="gold" className="bg-ink text-[34px]">Final Heist Standings (Top 20)</Stamp>
+        <Stamp tone="gold" className="bg-ink text-[34px]">Final Heist Standings (Top 10)</Stamp>
       </div>
       <div className="relative z-10 mt-3 flex items-end justify-center gap-10">
         <Podium row={top[1]} place={2} h={220} />
         <Podium row={top[0]} place={1} h={290} />
         <Podium row={top[2]} place={3} h={180} />
       </div>
-      <div className="plate relative z-10 mt-4 px-8 py-3">
-        <div className="flex items-center justify-between border-b border-gold/30 pb-2 mb-2">
-          <CaseLabel className="!text-[22px] text-gold">Crew Standings / Ranks 4 to 20</CaseLabel>
-          <span className="label text-[15px] text-paper/70 font-mono">Official Final Scores</span>
+      {rest.length > 0 && (
+        <div className="plate relative z-10 mt-4 px-8 py-3">
+          <div className="flex items-center justify-between border-b border-gold/30 pb-2 mb-2">
+            <CaseLabel className="!text-[22px] text-gold">Crew Standings / Ranks 4 to 10</CaseLabel>
+            <span className="label text-[15px] text-paper/70 font-mono">Official Top 10 Winners</span>
+          </div>
+          <div className="grid grid-cols-2 gap-x-12">
+            {[left, right].map((col, c) => (
+              <ol key={c}>
+                {col.map((r) => (
+                  <li key={r.id} className="flex items-center gap-4 border-b border-paper/15 py-1">
+                    <span className="display num w-12 text-center text-[34px] text-gold">#{r.rank}</span>
+                    <Avatar id={r.a} size={42} />
+                    <span className="min-w-0 flex-1 truncate font-type text-[30px] font-semibold text-paper">{r.n}</span>
+                    <span className="display num text-[32px] text-gold">{r.pts.toLocaleString('en-IN')}</span>
+                  </li>
+                ))}
+              </ol>
+            ))}
+          </div>
         </div>
-        <div className="grid grid-cols-2 gap-x-12">
-          {[left, right].map((col, c) => (
-            <ol key={c}>
-              {col.map((r) => (
-                <li key={r.id} className="flex items-center gap-4 border-b border-paper/15 py-1">
-                  <span className="display num w-12 text-center text-[34px] text-gold">#{r.rank}</span>
-                  <Avatar id={r.a} size={42} />
-                  <span className="min-w-0 flex-1 truncate font-type text-[30px] font-semibold text-paper">{r.n}</span>
-                  <span className="display num text-[32px] text-gold">{r.pts.toLocaleString('en-IN')}</span>
-                </li>
-              ))}
-            </ol>
-          ))}
-        </div>
-      </div>
+      )}
     </div>
   );
 }
